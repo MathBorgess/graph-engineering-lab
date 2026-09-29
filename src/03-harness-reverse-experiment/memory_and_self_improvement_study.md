@@ -79,6 +79,87 @@ A engenharia reversa do executável `codex` e dos arquivos em `~/.codex` revelou
 
 ---
 
+### 1.3 A Matriz de Decisão Epistêmica: Como o Agente SABE Quando Escrever, Atualizar ou Deletar uma Memória
+
+Uma das dúvidas centrais em sistemas agênticos avançados é: **qual é o mecanismo cognitivo exato que faz o agente decidir entre apenas responder ao usuário ou abrir ferramentas de persistência de memória (`Write`/`Edit`)?**
+
+A análise dos system prompts capturados pelo nosso proxy MITM revela que isso não é mágica estatística imprevisível, mas sim um **conjunto rígido de heurísticas condicionais, sinais de turno, regras de exclusão estritas e contratos de verificação da verdade**.
+
+#### A. O Fluxo de Decisão Cognitiva a Cada Turno
+
+```mermaid
+flowchart TD
+    Input([Input do Usuário ou Resultado de Execução]) --> CheckExplicit{Houve comando explícito?\n'Lembre-se', 'Esqueça', 'Guarde como regra'}
+    
+    CheckExplicit -- Sim: Lembrar --> SelectType[Classificar Tipo:\nuser, feedback, project, reference]
+    CheckExplicit -- Sim: Esquecer --> DeleteMem[Localizar no MEMORY.md\ne Deletar arquivo <slug>.md]
+    
+    CheckExplicit -- Não --> CheckImplicit{Houve sinal implícito?\n• Correção/Atrito ('não faça isso')\n• Confirmação ('perfeito, manter assim')\n• Perfil do usuário revelado\n• Decisão de negócio / data limite}
+    
+    CheckImplicit -- Não --> NoMemory[Não mutar memória.\nSeguir fluxo normal de resposta.]
+    CheckImplicit -- Sim --> EvalNegative{Viola Negative Boundary?\n• É derivável do código no disco?\n• Está no git log / blame?\n• Já está no CLAUDE.md / AGENTS.md?\n• É efêmero desta sessão/tarefa?}
+    
+    EvalNegative -- Sim --> Discard[Descartar salvamento.\n(Se o usuário insistir, extrair apenas o não-óbvio)]
+    EvalNegative -- Não --> SelectType
+    
+    SelectType --> CheckExisting{Já existe registro similar\nno índice MEMORY.md?}
+    
+    CheckExisting -- Sim --> EditExisting["Atualizar Memória Existente (Edit <slug>.md)\n• Refinar regra ou adicionar novo Why / How to apply\n• Evitar arquivos duplicados"]
+    CheckExisting -- Não --> CreateNew["Criar Nova Memória (Write <slug>.md)\n1. Gravar arquivo com YAML frontmatter\n2. Adicionar linha de índice no MEMORY.md (<150 chars)"]
+    
+    EditExisting --> VerifyStale[Verificar se observações atuais contradizem memórias antigas]
+    CreateNew --> VerifyStale
+    VerifyStale --> Finalize[Memória Sincronizada e Ativa]
+```
+
+#### B. Os Gatilhos Explícitos e Implícitos de Escrita
+
+O harness ensina o modelo a monitorar continuamente 5 classes de sinais conversacionais:
+
+| Tipo de Gatilho | Padrões Verbais e Sinais Observados | Tipo de Memória Alvo | Exemplo Prático Capturado nos Payloads | Ação Executada pelo Agente |
+| :--- | :--- | :--- | :--- | :--- |
+| **Comando Explícito** | *"Lembre-se de...", "Grave isso...", "Guarde como regra...", "Never forget..."* | Qualquer (o que melhor se adequar) | Usuário: *"Lembre-se de sempre formatar saídas matemáticas em MB e KB."* | Escreve imediatamente em `<slug>.md` e indexa em `MEMORY.md`. |
+| **Feedback de Correção (Negativo)** | *"Não faça isso", "Não use mocks", "Pare de resumir no final", "Você errou a biblioteca"* | `feedback` | Usuário: *"Não mocke o banco nesses testes — ano passado mocks mascararam falha de migração."* | Extrai a regra (*"banco real obrigatório"*), o **Why:** (*incidente anterior*) e **How to apply:** (*testes de integração*). |
+| **Feedback de Confirmação (Positivo Silencioso)** | *"Sim, exatamente", "Perfeito, manter tudo agrupado foi a decisão certa", aceitar escolha não-trivial sem atrito* | `feedback` | Usuário: *"Sim, fazer um único PR agrupado foi a decisão certa aqui."* | Grava a confirmação para evitar que o modelo se torne excessivamente cauteloso ou reverta decisões válidas. |
+| **Revelação de Perfil do Usuário** | *"Sou cientista de dados...", "Tenho 10 anos de Go, mas é meu primeiro contato com React..."* | `user` | Usuário explicando seu background técnico durante uma dúvida. | Grava o perfil para calibrar analogias conceituais (ex: explicar React usando conceitos de concorrência em Go). |
+| **Restrições de Projeto / Negócio** | *"Vamos congelar merges quinta-feira", "A reescrita de auth é por exigência da auditoria legal"* | `project` | Menção a prazos, incidentes, sprints ou motivações corporativas. | **Regra Obrigatória:** Converte datas relativas em absolutas (ex: *"quinta-feira"* $\to$ `2026-03-05`) e grava a motivação. |
+| **Ponteiros de Ecossistema Externo** | *"Os bugs ficam na fila INGEST do Linear", "O dashboard do oncall é grafana.internal/latency"* | `reference` | Menção a links, boards, canais do Slack ou métricas externas. | Salva ponteiro para saber onde buscar contexto em turnos futuros. |
+
+#### C. O Filtro de Rejeição (Negative Boundary: O que NUNCA Salvar)
+
+O agente **NÃO salva qualquer observação**. O harness impõe uma fronteira negativa rígida com 5 exclusões inegociáveis:
+1. **Código e Arquitetura do Repositório**: Se o modelo pode descobrir rodando `grep`, `find` ou lendo arquivos do projeto, **é expressamente proibido salvar em memória**.
+2. **Histórico do Git**: `git log` e `git blame` são as fontes autoritativas da verdade. Memória não deve resumir quem comitou o quê ou quando.
+3. **Soluções de Bugs ou Receitas de Fix**: O conserto pertence ao código e à mensagem de commit. A memória só deve ser criada se o usuário manifestou uma preferência duradoura de como abordar problemas futuros.
+4. **Instruções já Documentadas**: O que já consta em `CLAUDE.md`, `AGENTS.md` ou regras do repositório nunca deve ser duplicado na memória.
+5. **Estado Efêmero de Sessão**: Se a informação serve apenas para a tarefa em andamento (ex: lista de arquivos a editar agora, progresso dos testes locais), o harness proíbe `memory` e força o uso de `Plan` ou `Tasks`.
+
+> **Regra de Resistência à Solicitação do Usuário:** Mesmo se o usuário pedir explicitamente: *"Salve na memória um resumo do que fizemos neste PR"*, o harness instrui o modelo a questionar ou filtrar: *"O que houve de surpreendente ou não-óbvio que precisa ser mantido para além do histórico do git?"*
+
+#### D. Heurística de Mutação: Criar vs. Atualizar vs. Invalidação de Memória Obsoleta (Stale Memory)
+
+Como o agente sabe se deve criar um novo arquivo ou alterar um já existente?
+1. **Deduplicação Proativa via Índice `MEMORY.md`**:
+   - Antes de criar um arquivo novo, o agente consulta o índice `MEMORY.md` (que está sempre carregado no contexto inicial).
+   - Se já existe uma entrada sobre o mesmo tópico (ex: `feedback-database-testing.md`), ele **não cria arquivo novo**. Ele emite uma chamada `Edit` no arquivo existente, adicionando novas regras ou ajustando o campo `How to apply:`, preservando o índice conciso.
+2. **Princípio da Primazia da Observação Presente (Stale Memory Handling)**:
+   - Uma memória reflete o que era verdade *quando foi escrita*. Ela não é um axioma eterno.
+   - Antes de aplicar uma recomendação baseada em memória antiga que mencione arquivos, rotas ou parâmetros:
+     - Se a memória cita um arquivo: o agente verifica se o arquivo ainda existe no disco.
+     - Se cita uma função ou endpoint: roda `grep` para verificar se ainda existe.
+   - **Regra de Ouro do Conflito:** Se uma memória diz *"o servidor usa JWT no header Authorization"*, mas o código no disco mostra que agora usa cookies HttpOnly com session token, **a observação atual no disco tem precedência absoluta sobre a memória**. O agente é obrigado a confiar na realidade do código e atualizar ou deletar a memória obsoleta.
+
+#### E. Comparativo de Implementação entre os Três Sistemas
+
+| Dimensão | Claude Code CLI (Anthropic) | OpenAI Codex CLI | DeepAgents LangGraph (`deepagents_self_improving.py`) |
+| :--- | :--- | :--- | :--- |
+| **Quem decide a escrita** | O próprio modelo LLM no turno interativo via tool calls (`Write`/`Edit`). | **Memory Consolidation Agent** assíncrono em segundo plano (Phase 2 heartbeat). | O nó **`auto_review`** audita logs de execução e o nó **`self_improve_and_consolidate`** persiste. |
+| **Sobrecarga de Turno** | Consome tool calls e tokens no próprio turno do usuário. | Zero overhead de inferência no turno interativo (delegado ao background). | Executado de forma determinística no pipeline cíclico do grafo (Node 3 $\to$ Node 4). |
+| **Estrutura de Armazenamento** | Arquivos `.md` individuais com YAML frontmatter + `MEMORY.md`. | Banco `memories_1.sqlite` bruto + `memory_summary.md` consolidado. | Arquivos `.md` individuais com frontmatter + `MEMORY.md` + Triplas no Grafo Ontológico. |
+| **Garantia contra Inchaço** | Limite estrito de 200 linhas no índice `MEMORY.md` com truncamento. | Compressão periódica dos logs SQLite em sumários de alto nível. | Poda pelo índice de relevância top-k e enriquecimento semântico da ontologia. |
+
+---
+
 ## 2. O Mecanismo de "Context Deferred" (Diferimento de Contexto)
 
 O grande desafio de sistemas agenticos modernos é a sobrecarga de ferramentas: disponibilizar 150 ferramentas no schema JSON satura a atenção do modelo e gasta até 30% da janela com schemas não utilizados.

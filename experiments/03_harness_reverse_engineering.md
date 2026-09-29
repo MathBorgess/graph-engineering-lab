@@ -57,7 +57,7 @@ Ambos os harnesses injetam um volume gigantesco de contexto inicial, mas com abo
      - `userEmail`: Identificação do usuário logado.
      - `AGENTS.md`: Arquivos de regras do projeto automaticamente descobertos e embutidos.
      - Diretrizes de atribuição obrigatória para commits git (`Co-Authored-By: Claude Sonnet 5`).
-  3. **Auto Memory System:** O Claude Code possui um sistema de arquivos de memória persistente em disco (`~/.claude/projects/<slug>/memory/`), categorizando memórias em `user`, `feedback`, `project` e `reference`, governadas por um índice `MEMORY.md`.
+  3. **Auto Memory System:** O Claude Code possui um sistema de arquivos de memória persistente em disco (`~/.claude/projects/<slug>/memory/`), categorizando memórias em `user`, `feedback`, `project` e `reference`, governadas por um índice `MEMORY.md`. O agente decide quando escrever/atualizar através de uma matriz epistêmica de gatilhos (correções, confirmações silenciosas, perfil, restrições com datas absolutas) e barreiras estritas de exclusão (Negative Boundary), detalhados em [`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md).
 
 #### No OpenAI Codex:
 - **Volume:** Injeção inicial em torno de **45.000 caracteres**, estruturada em seções markdown bem delimitadas.
