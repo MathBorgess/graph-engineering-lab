@@ -1,0 +1,75 @@
+{
+  "harness": "claude-code",
+  "model": "claude-sonnet-5",
+  "system_prompt_char_length": 27621,
+  "system_prompt_blocks": 3,
+  "tools_count": 38,
+  "tool_names": [
+    "Agent",
+    "Bash",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EnterWorktree",
+    "ExitWorktree",
+    "ListAgents",
+    "ListMcpResourcesTool",
+    "Monitor",
+    "NotebookEdit",
+    "PushNotification",
+    "Read",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SendMessage",
+    "Skill",
+    "TaskStop",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "mcp__plugin_speak_speak__speak",
+    "mcp__plugin_speak_speak__speak_clips",
+    "mcp__plugin_speak_speak__speak_stop",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_inspect_page",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_list_sessions",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_rescue_task",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_run_task",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_session_close",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_session_get_state",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_session_start",
+    "mcp__plugin_ultrafast-browser_ultrafast-browser__laya_session_step"
+  ],
+  "thinking_config": {
+    "type": "adaptive",
+    "display": "omitted"
+  },
+  "context_management": {
+    "edits": [
+      {
+        "type": "clear_thinking_20251015",
+        "keep": "all"
+      }
+    ]
+  },
+  "messages_count": 2,
+  "headers_inspected": {
+    "x-claude-code-session-id": "6b3ae3ca-9953-4899-8dff-62f5948e8546",
+    "x-stainless-arch": "arm64",
+    "x-stainless-lang": "js",
+    "x-stainless-os": "MacOS",
+    "x-stainless-package-version": "0.112.1",
+    "x-stainless-retry-count": "0",
+    "x-stainless-runtime": "node",
+    "x-stainless-runtime-version": "v26.3.0",
+    "x-stainless-timeout": "300",
+    "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,interleaved-thinking-2025-05-14,thinking-token-count-2026-05-13,context-management-2025-06-27,prompt-caching-scope-2026-01-05,mid-conversation-system-2026-04-07,advisor-tool-2026-03-01,effort-2025-11-24,extended-cache-ttl-2025-04-11",
+    "anthropic-dangerous-direct-browser-access": "true",
+    "anthropic-version": "2023-06-01",
+    "x-app": "cli"
+  }
+}
