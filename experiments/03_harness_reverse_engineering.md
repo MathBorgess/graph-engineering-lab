@@ -1,4 +1,4 @@
-# 🔬 Experimento 02: Engenharia Reversa dos Harnesses (Claude Code vs OpenAI Codex)
+# 🔬 Experimento 03: Engenharia Reversa dos Harnesses (Claude Code vs OpenAI Codex)
 ## Revelando a Anatomia dos System Prompts, Descoberta de Ferramentas, Context Engine e Reasoning Effort via MITM
 
 **Autor:** Matheus Borges  
@@ -27,7 +27,7 @@ Através dessa ponte, capturamos mais de **70 payloads JSON brutos** contendo re
 
 ## 2. A Matriz de Testes Executada
 
-Definimos 4 sessões controladas para estressar dimensões específicas da arquitetura, comparando os modelos pequenos e intermediários de raciocínio de ponta: **Claude 3.7 Sonnet (`claude-sonnet-5`)** com `--effort high` e **OpenAI Codex (`gpt-6-luna`)** com `model_reasoning_effort="high"`:
+Definimos 4 sessões controladas para estressar dimensões específicas da arquitetura, comparando os modelos pequenos e intermediários de raciocínio de ponta: **Claude Sonnet 5 (`claude-sonnet-5`)** com `--effort high` e **OpenAI Codex (`gpt-6-luna`)** com `model_reasoning_effort="high"`:
 
 ```
 +-----------------------------------------------------------------------------------------------+
@@ -49,7 +49,7 @@ Definimos 4 sessões controladas para estressar dimensões específicas da arqui
 Ambos os harnesses injetam um volume gigantesco de contexto inicial, mas com abordagens estilísticas e arquiteturais contrastantes:
 
 #### No Claude Code (Anthropic):
-- **Volume:** O primeiro payload enviado ultrapassou **474 KB**, dos quais ~27.600 caracteres são texto puro de instruções de sistema e mais de 400 KB são schemas de ferramentas e blocos de contexto.
+- **Volume:** O primeiro request tem **~360 KB em JSON compacto** (o arquivo capturado tem 474 KB por estar indentado), dos quais ~27.600 caracteres são instruções de sistema e **~315 KB (88%) são schemas de 183 ferramentas**. Nas outras execuções: 331 KB / 165 tools (87% tools) e 141 KB / 38 tools (70% tools).
 - **Estrutura Modular:** O prompt não é uma string monolítica, mas um array estruturado de blocos:
   1. `x-anthropic-billing-header`: Tags de faturamento e rastreamento de versão (`cc_version=2.1.278.655`).
   2. `<system-reminder>`: Injeções dinâmicas de ambiente:
@@ -74,8 +74,8 @@ Como os harnesses lidam com centenas de ferramentas sem estourar o limite de tok
 
 #### Claude Code:
 1. **Injeção Maciça no Turno 0:** O Claude Code enviou impressionantes **183 ferramentas** no schema JSON da API logo no primeiro turno.
-   - 25 ferramentas nativas: `Agent`, `Bash`, `Edit`, `Read`, `Write`, `NotebookEdit`, `CronCreate`, `WebSearch`, etc.
-   - 158 ferramentas de servidores MCP em nuvem e locais: identificadas pelo prefixo `mcp__<servidor>__<função>` (ex: `mcp__claude_ai_Linear__create_issue`, `mcp__plugin_speak_speak__speak`).
+   - 27 ferramentas nativas: `Agent`, `Bash`, `Edit`, `Read`, `Write`, `NotebookEdit`, `CronCreate`, `WebSearch`, etc.
+   - 156 ferramentas de servidores MCP (no turno 0 da tarefa 01; o número varia por execução) em nuvem e locais: identificadas pelo prefixo `mcp__<servidor>__<função>` (ex: `mcp__claude_ai_Linear__create_issue`, `mcp__plugin_speak_speak__speak`).
 2. **Controle de Skills via `Skill Tool`:** As skills não são ferramentas da API; são documentos `SKILL.md`. O prompt lista os nomes e gatilhos de ~50 skills em um bloco de texto, e o modelo invoca a ferramenta nativa `Skill(skill="nome")` para carregar o conteúdo sob demanda.
 
 #### OpenAI Codex:
@@ -117,9 +117,9 @@ O que realmente muda quando selecionamos `effort: high` nos dois ecossistemas?
 | Característica         | Anthropic Claude (Sonnet)         | OpenAI Codex (GPT-6 Luna)        |
 +-----------------------------------------------------------------------------------------------+
 | Parâmetro de API       | "thinking": {"type": "adaptive"}  | "reasoning_effort": "high"       |
-| Headers de Beta        | effort-2025-11-24                 | Não aplicável (campo no payload) |
+| Headers de Beta        | não capturados (`output_config.effort` no corpo) | Não aplicável (campo no payload) |
 | Formato de Resposta    | Blocos explícitos type: "thinking"| Tokens internos computados       |
-| Consumo de Tokens      | Orçamento expansível até 16k-32k  | Salta de ~1.200 para ~22.000     |
+| Consumo de Tokens      | não medido (capturas sem `usage`) | relatado ~1.200→~22.000; não verificável nas capturas |
 | Impacto de Latência    | ~15s a 35s adicionais de reflexão | ~18s a 30s adicionais            |
 +-----------------------------------------------------------------------------------------------+
 ```

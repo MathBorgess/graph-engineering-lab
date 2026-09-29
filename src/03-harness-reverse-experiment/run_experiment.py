@@ -185,7 +185,7 @@ def build_markdown_report(results: List[Dict[str, Any]], captured_summaries: Lis
 
 **Data de Execução:** {now}  
 **Ambiente:** macOS Darwin (Apple Silicon arm64)  
-**Modelos Avaliados:** Claude 3.7 Sonnet (`sonnet`, `--effort high`) | OpenAI Codex (`gpt-6-luna`, `model_reasoning_effort="high"`)  
+**Modelos Avaliados:** Claude Sonnet 5 (`sonnet` → `claude-sonnet-5`, `--effort high`) | OpenAI Codex (`gpt-6-luna`, `model_reasoning_effort="high"`)  
 **Estratégia de Intercepção:** MITM Proxy em `http://127.0.0.1:9300`  
 
 ---
@@ -198,11 +198,11 @@ Por meio da intercepção direta via proxy reverso (MITM) posicionado entre os e
 
 | Dimensão de Análise | Claude Code CLI (v2.1.278) | OpenAI Codex CLI (v0.155.1) |
 | :--- | :--- | :--- |
-| **System Prompt Inicial** | **Massivo (~310 KB / ~75k caracteres)** injetado como array de blocos estruturados. | **Extenso (~45k caracteres)** compilado dinamicamente com seções e regras de segurança. |
-| **Primeiras Tools Nativas** | Conjunto estrito exposto no schema JSON da API: `Bash`, `Edit`, `Read`, `Glob`, `Grep`, `Write`, `NotebookEdit`. | Exposto via formato de respostas/tools e protocolo MCP interno (`/backend-api/ps/mcp`). |
-| **Descoberta de MCPs e Skills** | Protocolo unificado de Skills/Plugins no prompt + headers de beta `advisor-tool-2026-03-01`. | **Truncamento ativo de Skills** via orçamento de contexto (*"Skill descriptions were shortened..."*) e referências indexadas (`r0`). |
+| **System Prompt Inicial** | **Massivo: ~27,6k caracteres de system prompt (3 blocos) + 165–183 schemas de tools; request de ~332–360 KB em JSON compacto** (o arquivo capturado tem 437–475 KB por estar indentado). | **Extenso (~45k caracteres)** compilado dinamicamente com seções e regras de segurança. |
+| **Primeiras Tools Nativas** | 27 nativas no schema JSON da API (`Agent`, `Bash`, `Edit`, `Read`, `Write`, `NotebookEdit`, `Skill`, `WebFetch`, `WebSearch`, `Monitor`, …; sem `Glob`/`Grep` dedicados) + 138–156 tools de MCP, que variam por execução. | Exposto via formato de respostas/tools e protocolo MCP interno (`/backend-api/ps/mcp`). |
+| **Descoberta de MCPs e Skills** | Protocolo unificado de Skills/Plugins no prompt + headers de beta `advisor-tool-2026-03-01`. | **Descrições de skills cortadas em ~100 caracteres** (no meio da palavra; 125 skills) e referências por alias de raiz (`r0`…). O texto do aviso *"Skill descriptions were shortened…"* **não aparece** nas capturas. |
 | **Mecanismo de Context Engine** | **Prompt Caching Scope + Ephemeral Caching** (`prompt-caching-scope-2026-01-05`, `extended-cache-ttl-2025-04-11`). | Injeção de hooks locais (`SessionStart`, `UserPromptSubmit`), git status e diretórios confiáveis (`projects.trust_level`). |
-| **Mecanismo de Reasoning Effort** | Header `effort-2025-11-24` + bloco `thinking: {{"type": "enabled", "budget_tokens": ...}}`. | Campo `model_reasoning_effort = "high"` que instrui o backend a reservar tokens internos de raciocínio. |
+| **Mecanismo de Reasoning Effort** | `output_config: {{"effort": "high"}}` + `thinking: {{"type": "adaptive", "display": "omitted"}}` (verificado no corpo do request). | Campo `model_reasoning_effort = "high"` que instrui o backend a reservar tokens internos de raciocínio. |
 
 ---
 
@@ -246,15 +246,15 @@ Uma das maiores dúvidas em sistemas agenticos é o que o parâmetro `effort: hi
 - **Parâmetro de Rede:** A requisição envia:
   ```json
   "thinking": {{
-    "type": "enabled",
-    "budget_tokens": 16000
-  }}
+    "type": "adaptive",
+    "display": "omitted"
+  }},
+  "output_config": {{ "effort": "high" }}
   ```
-  acompanhado do header:
-  `anthropic-beta: effort-2025-11-24,interleaved-thinking-2025-05-14,thinking-token-count-2026-05-13`
+  Os headers `anthropic-beta` **não foram persistidos** nas capturas do Claude; qualquer valor de header citado antes era inferência e não está verificado.
 - **Comportamento em Execução:**
-  - O modelo emite blocos `type: "thinking"` contendo o fluxo de monólogo interno antes de emitir os blocos `type: "text"` ou `type: "tool_use"`.
-  - Com `effort: high`, o orçamento de tokens de raciocínio é maximizado (tipicamente 16k a 32k tokens), permitindo que o modelo realize múltiplos passos de prova matemática e exploração de hipóteses sem interromper o fluxo para o usuário.
+  - Blocos `type: "thinking"` do assistant voltam ao histórico com texto **vazio** (`display: "omitted"`) e só a assinatura.
+  - A magnitude do raciocínio **não foi medida**: as capturas contêm apenas requests, sem `usage`. Os números de 16k–32k tokens citados antes não têm lastro nas capturas.
 
 ### 4.2 No OpenAI Codex (GPT-6 Luna / Sol Reasoning Models)
 - **Parâmetro de Rede:** O payload para o endpoint do backend envia a diretiva:
