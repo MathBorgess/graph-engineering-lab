@@ -102,7 +102,35 @@ python src/deep_agents_graph.py --model claude --query "Calculate 2^16 memory bl
 
 ---
 
-## 📓 5. Lab Study & Architecture Assessment
+## 📓 5. Lab Study & Architecture Assessment (Experiments 1 & 2)
 
 For a comprehensive breakdown of the experiments, harness pollution analysis, MITM proxy mechanisms, and a **self-assessment question bank**, see:
 👉 [**experiments/01_harness_proxy_and_deepagents_study.md**](file:///Users/matheusborges/github/graph-engineering-lab/experiments/01_harness_proxy_and_deepagents_study.md)
+
+---
+
+## 🔬 6. Experimento 03: Engenharia Reversa de Harnesses & DeepAgents com Auto-Memory
+
+Engenharia reversa das injeções de harness do **Claude Code CLI** e **OpenAI Codex CLI** via MITM Proxy, revelando system prompts, discovery de skills/MCPs, gerenciamento de contexto e reasoning effort.
+
+Replicado no DeepAgents com:
+- **Auto-Memory Persistente**: Índice mestre `MEMORY.md` com arquivos `<slug>.md` estruturados em frontmatter YAML (`user`, `feedback`, `project`, `reference`).
+- **Context Deferred**: Skills catalog leve e carregamento sob demanda (`load_skill`).
+- **Logs Estruturados & Auto-Revisão (Crítica Epistêmica)**: Validação de acurácia e compliance antes da resposta final.
+- **Self-Improvement Loop**: Mutação contínua de memória e ontologia a cada interação.
+
+```bash
+# Executar a suíte de engenharia reversa via MITM:
+.venv/bin/python src/03-harness-reverse-experiment/run_experiment.py
+
+# Teste automatizado de 2 turnos com autoaperfeiçoamento e memória:
+.venv/bin/python src/03-harness-reverse-experiment/deepagents_self_improving.py --test
+
+# Iniciar o Studio Interativo com Memória Persistente:
+.venv/bin/python src/03-harness-reverse-experiment/deepagents_self_improving.py
+```
+
+Documentação e cadernos de laboratório:
+- 👉 [**`src/03-harness-reverse-experiment/report.md`**](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/report.md)
+- 👉 [**`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`**](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md)
+- 👉 [**`experiments/03_harness_reverse_engineering.md`**](file:///Users/matheusborges/github/graph-engineering-lab/experiments/03_harness_reverse_engineering.md)
