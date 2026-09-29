@@ -60,7 +60,7 @@ Ambos os harnesses injetam um volume gigantesco de contexto inicial, mas com abo
   3. **Auto Memory System:** O Claude Code possui um sistema de arquivos de memória persistente em disco (`~/.claude/projects/<slug>/memory/`), categorizando memórias em `user`, `feedback`, `project` e `reference`, governadas por um índice `MEMORY.md`. O agente decide quando escrever/atualizar através de uma matriz epistêmica de gatilhos (correções, confirmações silenciosas, perfil, restrições com datas absolutas) e barreiras estritas de exclusão (Negative Boundary), detalhados em [`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md).
 
 #### No OpenAI Codex:
-- **Volume:** Injeção inicial em torno de **45.000 caracteres**, estruturada em seções markdown bem delimitadas.
+- **Volume:** Prompt inicial de **~31.100 caracteres de texto** (bloco de skills de 21.800 + mensagens de papel/modo/plugins), obtido com `codex debug prompt-input` — **não** é tráfego de inferência capturado: o proxy só viu 19 handshakes MCP `initialize` do Codex.
 - **Foco em Segurança e Integridade Operacional:**
   1. **Salvaguardas Destrutivas:** Proibições explícitas de comandos recursivos em `$HOME`, `/`, ou diretórios não restritos, com preferência obrigatória por `mktemp -d` e exclusão reversível (lixeira).
   2. **Regras de Autorização Implícita:** O modelo é instruído a tomar ação imediatamente sem perguntar ao usuário se a ação for de leitura, local e de baixo raio de alcance.

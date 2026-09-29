@@ -16,3 +16,11 @@ Antes de publicar, os identificadores pessoais foram trocados por placeholders (
 O que continua nos arquivos, de propósito, por ser o objeto do estudo: system prompts, schemas de tools e MCPs, listagens de skills e o texto integral dos turnos. Não há tokens, chaves ou credenciais (varredura por `sk-ant-`, `accessToken`, `refreshToken`, `claudeAiOauth`, `ghp_`, `AKIA`, `-----BEGIN`).
 
 Tamanhos: os arquivos são JSON indentado; o request real em JSON compacto é ~25% menor (ex.: 474 KB no arquivo, ~360 KB no corpo).
+
+## Limites das capturas (lidos do código do proxy e dos próprios arquivos)
+
+- **Só requests.** O caminho de streaming do `mitm_proxy.py` repassa a resposta sem gravá-la; por isso não há `usage`, contagem de tokens nem acerto de cache nas capturas. Tudo aqui é estrutura e bytes.
+- **Cada request do Claude aparece duas vezes**, primeiro com `stream: true` e depois idêntico com `stream: false`. Consistente com o harness voltando a não-streaming quando o stream via proxy falha, mas a causa não foi investigada; os tempos de latência do relatório incluem esse retorno e não são medidas limpas.
+- **Claude foi capturado em modo headless** (`claude -p`, `cc_entrypoint=sdk-cli`, identidade "Claude agent built on the Claude Agent SDK"), não em sessão interativa.
+- **Codex:** o proxy só recebeu 19 chamadas JSON-RPC `initialize` (MCP). O prompt do Codex vem de `codex debug prompt-input`, não de tráfego de inferência.
+- Reproduzir os números: `python ../analyze_payloads.py`.
