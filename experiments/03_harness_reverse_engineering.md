@@ -64,6 +64,7 @@ Ambos os harnesses injetam um volume gigantesco de contexto inicial, mas com abo
 - **Foco em Segurança e Integridade Operacional:**
   1. **Salvaguardas Destrutivas:** Proibições explícitas de comandos recursivos em `$HOME`, `/`, ou diretórios não restritos, com preferência obrigatória por `mktemp -d` e exclusão reversível (lixeira).
   2. **Regras de Autorização Implícita:** O modelo é instruído a tomar ação imediatamente sem perguntar ao usuário se a ação for de leitura, local e de baixo raio de alcance.
+  3. **Sistema de Memória Transacional e Consolidação Assíncrona:** Diferente do Claude Code, o Codex desacopla completamente a gravação de memória do turno interativo do usuário. Utiliza um banco SQLite relacional (`~/.codex/memories_1.sqlite`) com tabelas `stage1_outputs` e `jobs` (fila de tarefas com leases e retries). No Stage 1, extrai `raw_memories.md` e `rollout_summaries/` com 4 seções analíticas obrigatórias (`Preference signals`, `Reusable knowledge`, `Failures and how to do differently`, `References`). No Stage 2, um processo assíncrono (**Memory Consolidation Agent**) executa o job `memory_consolidate_global`, destilando o conhecimento em `MEMORY.md` e `memory_summary.md` e efetuando commits automáticos em um repositório Git interno (`~/.codex/memories/.git`), detalhado em [`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md).
 
 ---
 

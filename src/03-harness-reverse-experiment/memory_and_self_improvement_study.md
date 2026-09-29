@@ -67,15 +67,173 @@ metadata:
 
 ---
 
-### 1.2 No OpenAI Codex CLI (Sistema de Consolidação em Duas Fases)
-A engenharia reversa do executável `codex` e dos arquivos em `~/.codex` revelou uma arquitetura dual:
-1. **Camada 1: SQLite + Logs Episódicos (`memories_1.sqlite` e `raw_memories.md`)**:
-   - Cada turno, comando e observação de ferramenta é registrado imediatamente como evento de telemetria e histórico bruto.
-2. **Camada 2: Memory Consolidation Agent (Phase 2 Heartbeat)**:
-   - Identificamos nos binários do Codex o processo do **Agente de Consolidação de Memória** (`memory consolidation agent`):
-     - Opera em segundo plano ou no fechamento da sessão.
-     - Lê os logs brutos episódicos e destila padrões duradouros para `memory_summary.md`.
-     - Evita que o modelo gaste tempo de inferência ou tokens durante o turno interativo imediato do usuário.
+### 1.2 No OpenAI Codex CLI: A Arquitetura do Memory Raw e do Consolidation Agent
+
+Enquanto o Claude Code adota uma abordagem puramente baseada em LLM inline (o próprio modelo do turno atual decide e invoca ferramentas de escrita/edição), a engenharia reversa do executável do **OpenAI Codex** e a inspeção forense de `~/.codex/` revelaram uma arquitetura de nível de engenharia de software muito mais robusta: **um pipeline assíncrono em duas etapas (Stage 1 e Stage 2) operado por um banco SQLite relacional, uma fila distribuída de jobs com leases e um repositório Git local dedicado**.
+
+```mermaid
+flowchart TD
+    subgraph Session["Turno Interativo do Usuário"]
+        UserPrompt([Comandos do Usuário]) --> AgentExec[Execução de Tarefas & Ferramentas]
+        AgentExec --> RolloutTelemetry["Gravação em Streaming:\n~/.codex/sessions/.../rollout-<thread_id>.jsonl"]
+    end
+
+    subgraph Phase1["Fase 1: Extração Local de Raw Memory (Stage 1)"]
+        RolloutTelemetry --> Stage1Trigger["Job: memory_stage1\n(Registrado na tabela 'jobs')"]
+        Stage1Trigger --> Stage1Worker["Stage 1 Extractor Worker\n(Lê rollout JSONL e infere sinal analítico)"]
+        Stage1Worker --> Stage1Output["Persistência em stage1_outputs (SQLite)\n• thread_id & source_updated_at\n• raw_memory (Markdown)\n• rollout_summary (Markdown)\n• rollout_slug"]
+        Stage1Output --> RawMD["Append estável em:\n~/.codex/memories/raw_memories.md"]
+        Stage1Output --> RolloutDir["Arquivo individual em:\n~/.codex/memories/rollout_summaries/<slug>.md"]
+    end
+
+    subgraph Phase2["Fase 2: Consolidação Global Assíncrona (Stage 2)"]
+        Stage1Output --> CheckPhase2["Filtro: selected_for_phase2 = 1\n(Watermarks de consolidação)"]
+        CheckPhase2 --> ConsolidateJob["Job: memory_consolidate_global\n(Fila de execução assíncrona com leasing)"]
+        ConsolidateJob --> ConsolidationAgent["🧠 Memory Consolidation Agent\n(Agrupa sessões por cwd, task_group e afinidade)"]
+        ConsolidationAgent --> MemoryMD["~/.codex/memories/MEMORY.md\n(Estruturado por Task Groups, escopo e regras)"]
+        ConsolidationAgent --> SummaryMD["~/.codex/memories/memory_summary.md\n(Perfil de usuário, preferências globais e índice por projeto)"]
+        ConsolidationAgent --> GitCommit["Git Commit Automático no repo local:\n~/.codex/memories/.git"]
+    end
+```
+
+#### A. A Estrutura Física em Disco (`~/.codex/memories/`)
+A pasta `~/.codex/memories/` é tratada pelo Codex como uma base de conhecimento isolada e versionada:
+```
+~/.codex/
+├── memories_1.sqlite            <--- Banco relacional com esquemas de jobs e estágios
+├── memories/
+│   ├── .git/                    <--- Repositório Git interno (cada consolidação gera um commit!)
+│   ├── raw_memories.md          <--- Merge contínuo e estável de todos os raw memories
+│   ├── MEMORY.md                <--- Consolidação de médio nível por Task Groups
+│   ├── memory_summary.md        <--- Sumário global de alto nível (perfil, preferências, projetos)
+│   └── rollout_summaries/       <--- Arquivos markdown de sumário de cada rollout individual
+│       ├── 2026-09-05T18-32-15-tau_intent_rebuild.md
+│       └── 2026-09-25T10-54-01-laya_ultrafast_study.md
+```
+
+#### B. O Esquema do Banco SQLite (`~/.codex/memories_1.sqlite`)
+A orquestração do pipeline é 100% transacional e gerenciada por três tabelas principais no SQLite:
+
+1. **Tabela `stage1_outputs` (Armazenamento dos Raw Memories)**:
+```sql
+CREATE TABLE stage1_outputs (
+    thread_id TEXT PRIMARY KEY,
+    source_updated_at INTEGER NOT NULL,
+    raw_memory TEXT NOT NULL,
+    rollout_summary TEXT NOT NULL,
+    rollout_slug TEXT,
+    generated_at INTEGER NOT NULL,
+    usage_count INTEGER,
+    last_usage INTEGER,
+    selected_for_phase2 INTEGER NOT NULL DEFAULT 0,
+    selected_for_phase2_source_updated_at INTEGER
+);
+CREATE INDEX idx_stage1_outputs_source_updated_at 
+    ON stage1_outputs(source_updated_at DESC, thread_id DESC);
+```
+
+2. **Tabela `jobs` (Fila de Tarefas Assíncronas com Leases e Retry)**:
+```sql
+CREATE TABLE jobs (
+    kind TEXT NOT NULL,               -- 'memory_stage1' ou 'memory_consolidate_global'
+    job_key TEXT NOT NULL,            -- thread_id específico ou 'global'
+    status TEXT NOT NULL,             -- 'pending', 'running', 'done', 'failed'
+    worker_id TEXT,
+    ownership_token TEXT,
+    started_at INTEGER,
+    finished_at INTEGER,
+    lease_until INTEGER,
+    retry_at INTEGER,
+    retry_remaining INTEGER NOT NULL, -- padrão: 3 tentativas com backoff
+    last_error TEXT,
+    input_watermark INTEGER,
+    last_success_watermark INTEGER,
+    PRIMARY KEY (kind, job_key)
+);
+CREATE INDEX idx_jobs_kind_status_retry_lease 
+    ON jobs(kind, status, retry_at, lease_until);
+```
+
+3. **Tabela `consolidation_progress` (Rastreamento de Watermarks)**:
+```sql
+CREATE TABLE consolidation_progress (
+    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+    max_thread_count INTEGER NOT NULL DEFAULT 0
+);
+```
+
+#### C. Anatomia de um "Raw Memory" do Codex
+Diferente de um simples log de chat, o **Raw Memory** gerado no Stage 1 é um documento analítico altamente estruturado. Cada bloco de sessão em `raw_memories.md` e na coluna `raw_memory` possui:
+
+```markdown
+## Thread `01a072d7-b857-78a0-8e7c-574e76da5e6d`
+updated_at: 2026-09-05T19:36:03+00:00
+cwd: /Users/matheusborges/github/tau-intent
+rollout_path: /Users/matheusborges/.codex/sessions/.../rollout-...jsonl
+rollout_summary_file: 2026-09-05T18-32-15-tau_intent_v2_adapter_rebuild.md
+
+---
+description: Reconstrução v2 do tau-intent com gates acionáveis e checkpoints auditáveis.
+task: rebuild tau-intent v2 general adapter mechanism
+task_group: tau-intent mechanism reconstruction
+task_outcome: success
+cwd: /Users/matheusborges/github/tau-intent
+keywords: tau-intent, SPEC-V2, Adapter, gate, typed store, checkpoint, retrieval
+---
+
+### Task 1: Reproduzir baseline e defeitos v1.1
+task: reproduce v1.1 gate, coverage, and identity-table defects
+task_group: tau-intent verification
+task_outcome: success
+
+Preference signals:
+- O usuário exigiu reproduzir os três casos por execução antes de corrigir e proibiu benchmarks -> futuras alterações devem começar com reprodução explícita.
+
+Reusable knowledge:
+- Baseline `cb1fdee9...`: Python 6×20 PASSA; Go BLOQUEIA com EDICAO_GRANDE_SEM_SIMBOLO.
+- `PYTHONPATH=src NO_NETWORK=1 python3 -m unittest discover -s tests` executou 203 testes verdes.
+
+Failures and how to do differently:
+- A cobertura escalar misturava granularidades; nunca tratar cobertura por arquivo como cobertura efetiva de identidade.
+- Um gate deve declarar verificações impossíveis em vez de punir o agente por ausência de resolver.
+
+References:
+- Baseline commit: `cb1fdee99e7dd68229c47a54135bc61d66b39c7f`.
+```
+
+As 4 seções analíticas obrigatórias de cada tarefa no Raw Memory:
+1. **`Preference signals`**: Sinais comportamentais capturados do usuário (ex: restrições de escopo, permissão ou veto a commits/pushes, preferências de ferramentas).
+2. **`Reusable knowledge`**: Fatos empíricos verificados (comandos exatos que passaram nos testes, flags necessárias como `NO_NETWORK=1`, portas locais validadas).
+3. **`Failures and how to do differently`**: Post-mortem operacional (por que falhou, o que não tentar novamente, como contornar armadilhas de ambiente).
+4. **`References`**: Hashes de commit, caminhos de arquivos de teste, endpoints locais.
+
+#### D. O Funcionamento do Memory Consolidation Agent (Stage 2)
+Quando a fila processa o job `memory_consolidate_global`, o **Memory Consolidation Agent** entra em ação:
+1. **Seleção e Agrupamento Semântico**:
+   - Seleciona todas as linhas de `stage1_outputs` onde `selected_for_phase2 = 1`.
+   - Agrupa os raw memories pelo diretório de trabalho (`cwd`) e pelo identificador de grupo (`task_group`).
+2. **Destilação para o `MEMORY.md`**:
+   - Gera blocos `# Task Group: <Nome>` contendo:
+     - `scope`: O objetivo macro daquele agrupamento.
+     - `applies_to`: Regras de ativação (`cwd=...`, condições de revalidação de dependências).
+     - `keywords`: Índices lexicais para busca rápida.
+     - `User preferences`, `Reusable knowledge` e `Failures and how to do differently` consolidados e desduplicados.
+3. **Destilação para o `memory_summary.md`**:
+   - É o sumário executivo carregado no contexto do agente interativo. Estrutura-se em:
+     - `## User Profile`: Como o usuário trabalha, suas prioridades metodológicas e fuso horário.
+     - `## User preferences`: Regras fundamentais (ex: *"nunca invente métricas"*, *"use Trash em vez de rm definitivo"*).
+     - `## General Tips`: Dicas transversais entre repositórios.
+     - `## What's in Memory`: Um sumário indexado por caminho de repositório e data, indicando o que já foi aprendido.
+4. **Versionamento Git Automático**:
+   - Uma vez gerados os novos arquivos Markdown, o processo executa `git add` e `git commit` no repositório `~/.codex/memories/.git`, criando um histórico imutável e auditável de cada consolidação.
+
+#### E. Por que essa Arquitetura Supera a Abordagem Inline Simples?
+1. **Zero Sobrecarga no Turno Interativo**: O usuário não espera o LLM gastar 10 segundos chamando ferramentas para salvar memória no meio do prompt; a conversa interativa termina instantaneamente.
+2. **Resiliência a Falhas (Fault Tolerance)**: Se a máquina for reiniciada ou um processo travar, a tabela `jobs` do SQLite garante recuperação através de `lease_until` e `retry_remaining`.
+3. **Separação Epistêmica de Preocupações**:
+   - O agente interativo se concentra exclusivamente em **resolver a tarefa do usuário**.
+   - O worker de Stage 1 se concentra em **extrair o sinal bruto da sessão**.
+   - O Consolidation Agent se concentra em **sintetizar e generalizar o conhecimento para o longo prazo**.
 
 ---
 
