@@ -172,8 +172,8 @@ Diferente de um simples log de chat, o **Raw Memory** gerado no Stage 1 é um do
 ```markdown
 ## Thread `01a072d7-b857-78a0-8e7c-574e76da5e6d`
 updated_at: 2026-09-05T19:36:03+00:00
-cwd: /Users/matheusborges/github/tau-intent
-rollout_path: /Users/matheusborges/.codex/sessions/.../rollout-...jsonl
+cwd: /Users/<user>/github/tau-intent
+rollout_path: /Users/<user>/.codex/sessions/.../rollout-...jsonl
 rollout_summary_file: 2026-09-05T18-32-15-tau_intent_v2_adapter_rebuild.md
 
 ---
@@ -181,7 +181,7 @@ description: Reconstrução v2 do tau-intent com gates acionáveis e checkpoints
 task: rebuild tau-intent v2 general adapter mechanism
 task_group: tau-intent mechanism reconstruction
 task_outcome: success
-cwd: /Users/matheusborges/github/tau-intent
+cwd: /Users/<user>/github/tau-intent
 keywords: tau-intent, SPEC-V2, Adapter, gate, typed store, checkpoint, retrieval
 ---
 
@@ -393,7 +393,7 @@ Executamos o teste automatizado de 2 turnos com o backend Codex via nosso proxy 
   1. O nó `plan_and_recall` identificou o gatilho da skill `graph-rag-optimizer` e a marcou como ativa.
   2. O executor disparou `load_skill("graph-rag-optimizer")`, obtendo as instruções de dimensionamento de nós (128 bytes) e arestas (96 bytes).
   3. O nó de **Auto-Revisão** detectou que uma regra duradoura havia sido declarada.
-  4. O nó de **Self-Improvement** gerou o arquivo [`project_memory/pref-1790680343.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/project_memory/pref-1790680343.md) e registrou a entrada correspondente no [`project_memory/MEMORY.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/project_memory/MEMORY.md).
+  4. O nó de **Self-Improvement** gerou o arquivo [`project_memory/pref-1790680343.md`](project_memory/pref-1790680343.md) e registrou a entrada correspondente no [`project_memory/MEMORY.md`](project_memory/MEMORY.md).
 
 ### 4.2 Turno 2: Recuperação Automática e Compliance
 - **Instrução do Usuário:**  

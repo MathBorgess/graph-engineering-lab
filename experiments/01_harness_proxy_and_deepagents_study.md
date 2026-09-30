@@ -261,7 +261,7 @@ Utilize este banco de questões para testar seu domínio técnico sobre os conce
   1. Identificar que ferramentas de CLI para humanos injetam automaticamente estado do git, status de hooks, warnings de MCP e instruções de sistema de "assistente de terminal".
   2. Explicar como a injeção desse ruído quebra o raciocínio determinístico do modelo e exaure desnecessariamente a janela de contexto.
   3. Descrever a quebra dos parsers de agentes devido a códigos de escape ANSI e saídas interativas não-estruturadas.
-- **Referência no Código:** [`src/subscription_proxy.py`](file:///Users/matheusborges/github/graph-engineering-lab/src/subscription_proxy.py).
+- **Referência no Código:** [`src/subscription_proxy.py`](../src/subscription_proxy.py).
 
 #### Questão A2: Qual a diferença arquitetural entre um CLI Loopback e um Reverse-Authenticated MITM Proxy?
 - **Critérios de Resposta Esperada:**
@@ -283,7 +283,7 @@ Utilize este banco de questões para testar seu domínio técnico sobre os conce
   1. **Loop Infinito de Ação:** O agente repete a mesma ação com pequenas variações de parâmetros se a observação for inconclusiva.
   2. **Context Window Saturation:** Como o histórico é linear, o acúmulo de outputs brutos de ferramentas satura a janela de contexto.
   3. **Ausência de Camada Epistêmica:** O agente não possui separação entre *o que ele sabe com certeza* (ontologia) e *o que ele observou temporariamente* (scratchpad).
-- **Referência no Código:** [`src/react_agent.py`](file:///Users/matheusborges/github/graph-engineering-lab/src/react_agent.py).
+- **Referência no Código:** [`src/react_agent.py`](../src/react_agent.py).
 
 #### Questão B2: Por que a parada do ReAct é vulnerável a formatos de Stop Sequence?
 - **Critérios de Resposta Esperada:**
@@ -299,7 +299,7 @@ Utilize este banco de questões para testar seu domínio técnico sobre os conce
   1. A pergunta do usuário frequentemente contém ambiguidades, premissas implícitas e falta de direcionamento técnico.
   2. O DeepAgent 1 contextualiza a pergunta com a ontologia existente e traduz o objetivo em um contrato formal contendo: *Subtasks*, *Hypotheses*, *Required Findings* e *Constrained Tools*.
   3. Isso isola o agente executor de distrações conversacionais e estabelece uma meta clara e verificável.
-- **Referência no Código:** `memory_plan_node` em [`src/deep_agents_graph.py`](file:///Users/matheusborges/github/graph-engineering-lab/src/deep_agents_graph.py#L225).
+- **Referência no Código:** `memory_plan_node` em [`src/deep_agents_graph.py`](../src/deep_agents_graph.py#L225).
 
 #### Questão C2: Como o DeepAgent 1 executa "Entity Linking" antes de planejar?
 - **Critérios de Resposta Esperada:**
@@ -312,7 +312,7 @@ Utilize este banco de questões para testar seu domínio técnico sobre os conce
   1. O Reflector não apenas responde ao usuário; ele analisa criticamente o `execution_trace`.
   2. Extrai novos conceitos identificados durante a execução de ferramentas (ex: características da CPU, métricas de memória) e gera novas entidades formais.
   3. Constrói e valida novas triplas semânticas (`subject`, `predicate`, `object`), persistindo o aprendizado para os próximos ciclos de interação.
-- **Referência no Código:** `memory_reflect_node` em [`src/deep_agents_graph.py`](file:///Users/matheusborges/github/graph-engineering-lab/src/deep_agents_graph.py#L380).
+- **Referência no Código:** `memory_reflect_node` em [`src/deep_agents_graph.py`](../src/deep_agents_graph.py#L380).
 
 ---
 

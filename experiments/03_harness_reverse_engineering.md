@@ -5,8 +5,8 @@
 **Repositório:** `graph-engineering-lab`  
 **Data:** Setembro de 2026  
 **Status:** Concluído; revisado em 2026-09-30 (ver Errata)  
-**Relatório de Execução Detalhado:** [`src/03-harness-reverse-experiment/report.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/report.md)  
-**Diretório de Payloads Brutos:** [`src/03-harness-reverse-experiment/captured/`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/captured/)  
+**Relatório de Execução Detalhado:** [`src/03-harness-reverse-experiment/report.md`](../src/03-harness-reverse-experiment/report.md)  
+**Diretório de Payloads Brutos:** [`src/03-harness-reverse-experiment/captured/`](../src/03-harness-reverse-experiment/captured/)  
 
 > **Errata (2026-09-30).** Revisado contra os 72 arquivos de `captured/`. **Corrigido:** título (03, não 02); modelo (`claude-sonnet-5`); tamanhos (request de 140–359 KB compacto; 474 KB é o arquivo indentado); nº de tools (38–183; 27–28 nativas); `thinking` (`adaptive`/`omitted`, sem `budget_tokens`); headers (`anthropic-beta` completo nos `*_summary.json`, incluindo `effort-2025-11-24`); onde ficam os pontos de cache; "~50 skills no prompt" (não há catálogo no request `-p`). **Sem lastro nas capturas** (marcado no texto como *relato*): aviso "Skill descriptions were shortened…", regra de leitura de skills do Codex, salvaguardas destrutivas do Codex, pipeline de memória em SQLite, tokens de raciocínio, prompt de "~45k" caracteres. **Hipóteses não testadas:** que o harness degrade o foco do modelo; que a separação em dois DeepAgents dê raciocínio mais nítido. **Medido:** o peso do request.
 
@@ -19,7 +19,7 @@ Quando executamos ferramentas de linha de comando como o `claude` (Claude Code C
 Esse harness atua como um intermediário entre a digitação do usuário e a chamada real de inferência do modelo na nuvem. A pergunta central deste experimento foi:
 > **O que exatamente o harness injeta no modelo antes da nossa instrução ser processada? Como ele gerencia ferramentas, MCPs, contexto e o esforço de raciocínio (effort: high)?**
 
-Para responder a isso de forma empírica, construímos um **Proxy MITM (Man-in-the-Middle) Transparente** em [`src/03-harness-reverse-experiment/mitm_proxy.py`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/mitm_proxy.py), configurando as variáveis de ambiente e parâmetros de override nativos de cada ferramenta:
+Para responder a isso de forma empírica, construímos um **Proxy MITM (Man-in-the-Middle) Transparente** em [`src/03-harness-reverse-experiment/mitm_proxy.py`](../src/03-harness-reverse-experiment/mitm_proxy.py), configurando as variáveis de ambiente e parâmetros de override nativos de cada ferramenta:
 - **Claude Code:** `ANTHROPIC_BASE_URL=http://127.0.0.1:9300`
 - **Codex CLI:** `-c chatgpt_base_url="http://127.0.0.1:9300/backend-api"`
 
@@ -61,14 +61,14 @@ Ambos os harnesses injetam um volume gigantesco de contexto inicial, mas com abo
      - `userEmail`: Identificação do usuário logado.
      - `AGENTS.md`: Arquivos de regras do projeto automaticamente descobertos e embutidos.
      - Diretrizes de atribuição obrigatória para commits git (`Co-Authored-By: Claude Sonnet 5`).
-  3. **Auto Memory System** (a especificação inteira está no `system[2]`: 12,8k caracteres, 47% do bloco): O Claude Code possui um sistema de arquivos de memória persistente em disco (`~/.claude/projects/<slug>/memory/`), categorizando memórias em `user`, `feedback`, `project` e `reference`, governadas por um índice `MEMORY.md`. O agente decide quando escrever/atualizar através de uma matriz epistêmica de gatilhos (correções, confirmações silenciosas, perfil, restrições com datas absolutas) e barreiras estritas de exclusão (Negative Boundary), detalhados em [`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md).
+  3. **Auto Memory System** (a especificação inteira está no `system[2]`: 12,8k caracteres, 47% do bloco): O Claude Code possui um sistema de arquivos de memória persistente em disco (`~/.claude/projects/<slug>/memory/`), categorizando memórias em `user`, `feedback`, `project` e `reference`, governadas por um índice `MEMORY.md`. O agente decide quando escrever/atualizar através de uma matriz epistêmica de gatilhos (correções, confirmações silenciosas, perfil, restrições com datas absolutas) e barreiras estritas de exclusão (Negative Boundary), detalhados em [`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`](../src/03-harness-reverse-experiment/memory_and_self_improvement_study.md).
 
 #### No OpenAI Codex:
 - **Volume:** Prompt inicial de **~31.100 caracteres de texto** (bloco de skills de 21.800 + mensagens de papel/modo/plugins), obtido com `codex debug prompt-input` — **não** é tráfego de inferência capturado: o proxy só viu 19 handshakes MCP `initialize` do Codex.
 - **Foco em Segurança e Integridade Operacional:**
   1. **Escalonamento de ação destrutiva** (verificado): ação destrutiva não pedida (`rm`, `git reset`) exige aprovação, e nunca se propõe `prefix_rule` para `rm`. *Relato, não encontrado nas capturas:* proibição de comandos recursivos em `$HOME`/`/`, `mktemp -d` e exclusão reversível (podem estar no `instructions`, que a saída não mostra).
   2. **Autorização implícita** — *relato, não encontrado nas capturas*; o que existe é `sandbox_mode: read-only` com escalonamento por aprovação.
-  3. **Sistema de Memória Transacional e Consolidação Assíncrona** *(relato de inspeção de `~/.codex/`; sem artefato no repositório, e os itens de entrada capturados não trazem conteúdo de memória: hipótese, não fato verificado)*: Diferente do Claude Code, o Codex desacopla completamente a gravação de memória do turno interativo do usuário. Utiliza um banco SQLite relacional (`~/.codex/memories_1.sqlite`) com tabelas `stage1_outputs` e `jobs` (fila de tarefas com leases e retries). No Stage 1, extrai `raw_memories.md` e `rollout_summaries/` com 4 seções analíticas obrigatórias (`Preference signals`, `Reusable knowledge`, `Failures and how to do differently`, `References`). No Stage 2, um processo assíncrono (**Memory Consolidation Agent**) executa o job `memory_consolidate_global`, destilando o conhecimento em `MEMORY.md` e `memory_summary.md` e efetuando commits automáticos em um repositório Git interno (`~/.codex/memories/.git`), detalhado em [`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md).
+  3. **Sistema de Memória Transacional e Consolidação Assíncrona** *(relato de inspeção de `~/.codex/`; sem artefato no repositório, e os itens de entrada capturados não trazem conteúdo de memória: hipótese, não fato verificado)*: Diferente do Claude Code, o Codex desacopla completamente a gravação de memória do turno interativo do usuário. Utiliza um banco SQLite relacional (`~/.codex/memories_1.sqlite`) com tabelas `stage1_outputs` e `jobs` (fila de tarefas com leases e retries). No Stage 1, extrai `raw_memories.md` e `rollout_summaries/` com 4 seções analíticas obrigatórias (`Preference signals`, `Reusable knowledge`, `Failures and how to do differently`, `References`). No Stage 2, um processo assíncrono (**Memory Consolidation Agent**) executa o job `memory_consolidate_global`, destilando o conhecimento em `MEMORY.md` e `memory_summary.md` e efetuando commits automáticos em um repositório Git interno (`~/.codex/memories/.git`), detalhado em [`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`](../src/03-harness-reverse-experiment/memory_and_self_improvement_study.md).
 
 ---
 
@@ -143,10 +143,10 @@ A engenharia reversa destes harnesses consolida o projeto de nossos próprios ag
 
 1. **Por que o MITM é superior ao Subprocess CLI:**
    - Chamar o binário do CLI via subprocess (`claude -p` / `codex exec`) faz cada request carregar ~330–359 KB (87–88% deles schemas de ~165–183 ferramentas, mais `gitStatus` e `AGENTS.md`) que pertencem ao fluxo de terminal humano. **Medido:** o peso. **Hipótese não testada:** que isso degrade o foco ou a acurácia do modelo.
-   - O nosso proxy autenticado ([`src/subscription_proxy.py`](file:///Users/matheusborges/github/graph-engineering-lab/src/subscription_proxy.py)) captura as credenciais e acessa a API pura sem o peso morto do harness.
+   - O nosso proxy autenticado ([`src/subscription_proxy.py`](../src/subscription_proxy.py)) captura as credenciais e acessa a API pura sem o peso morto do harness.
 2. **Arquitetura de Dois DeepAgents (Memória vs Execução):**
    - Hipótese, não medida: o Codex e o Claude sofreriam com sobrecarga de atenção quando tentam ser arquitetos de memória e executores de ferramentas ao mesmo tempo.
-   - No nosso [`src/02-deepagents-experiment/deep_agents_graph.py`](file:///Users/matheusborges/github/graph-engineering-lab/src/02-deepagents-experiment/deep_agents_graph.py), a separação em:
+   - No nosso [`src/02-deepagents-experiment/deep_agents_graph.py`](../src/02-deepagents-experiment/deep_agents_graph.py), a separação em:
      - **DeepAgent 1 (Memória & Ontologia):** Construtor de diretivas e refletor epistêmico.
      - **DeepAgent 2 (Execução):** Operador de subagentes especializados (`calculate`, `python_eval`, etc.).
    é proposta para produzir um raciocínio mais nítido e rastreável; não há comparação medida com um agente único.
@@ -164,7 +164,7 @@ A partir dos achados da engenharia reversa do Auto-Memory do Claude e da consoli
 - **Validação Empírica em 2 Turnos**: observado em 1 execução, 1 regra, 2 turnos: o agente grava a regra no Turno 1 e, no Turno 2, sem menção do usuário, a carrega e cumpre a diretriz. **Limites:** o índice tinha 1 memória e `top_k = 3` sem limiar (qualquer consulta a carrega); o gatilho de escrita é uma lista de 11 substrings e grava a mensagem inteira do usuário. Prova o encanamento, não o recall seletivo.
 
 Estudo completo e arquitetura detalhada em:  
-👉 [**`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`**](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md)
+👉 [**`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`**](../src/03-harness-reverse-experiment/memory_and_self_improvement_study.md)
 
 ---
 

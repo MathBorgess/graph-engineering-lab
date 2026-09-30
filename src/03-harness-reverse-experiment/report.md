@@ -98,6 +98,6 @@ Uma das maiores dúvidas em sistemas agenticos é o que o parâmetro `effort: hi
 ## 6. Arquivos e Payloads Brutos Capturados
 
 Os payloads JSON integrais de cada chamada encontram-se salvos no diretório:
-👉 [`src/03-harness-reverse-experiment/captured/`](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/captured)
+👉 [`src/03-harness-reverse-experiment/captured/`](captured/)
 
 O corpo de cada request fica no `.json`; o `*_summary.json` guarda um resumo e os headers `anthropic-*`/`x-*` (nunca a credencial). Não há respostas nem `usage`: o proxy não grava a resposta em streaming. Os identificadores pessoais foram trocados por placeholders (ver `captured/README.md`).

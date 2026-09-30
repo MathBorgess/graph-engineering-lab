@@ -105,7 +105,7 @@ python src/deep_agents_graph.py --model claude --query "Calculate 2^16 memory bl
 ## 📓 5. Lab Study & Architecture Assessment (Experiments 1 & 2)
 
 For a comprehensive breakdown of the experiments, harness pollution analysis, MITM proxy mechanisms, and a **self-assessment question bank**, see:
-👉 [**experiments/01_harness_proxy_and_deepagents_study.md**](file:///Users/matheusborges/github/graph-engineering-lab/experiments/01_harness_proxy_and_deepagents_study.md)
+👉 [**experiments/01_harness_proxy_and_deepagents_study.md**](experiments/01_harness_proxy_and_deepagents_study.md)
 
 ---
 
@@ -131,6 +131,6 @@ Replicado no DeepAgents com:
 ```
 
 Documentação e cadernos de laboratório:
-- 👉 [**`src/03-harness-reverse-experiment/report.md`**](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/report.md)
-- 👉 [**`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`**](file:///Users/matheusborges/github/graph-engineering-lab/src/03-harness-reverse-experiment/memory_and_self_improvement_study.md)
-- 👉 [**`experiments/03_harness_reverse_engineering.md`**](file:///Users/matheusborges/github/graph-engineering-lab/experiments/03_harness_reverse_engineering.md)
+- 👉 [**`src/03-harness-reverse-experiment/report.md`**](src/03-harness-reverse-experiment/report.md)
+- 👉 [**`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`**](src/03-harness-reverse-experiment/memory_and_self_improvement_study.md)
+- 👉 [**`experiments/03_harness_reverse_engineering.md`**](experiments/03_harness_reverse_engineering.md)
