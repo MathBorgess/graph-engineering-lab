@@ -185,7 +185,7 @@
   },
   "messages_count": 2,
   "headers_inspected": {
-    "x-claude-code-session-id": "feec7175-9971-457e-91d4-f22a933a162f",
+    "x-claude-code-session-id": "<REDACTED_SESSION_ID>",
     "x-stainless-arch": "arm64",
     "x-stainless-lang": "js",
     "x-stainless-os": "MacOS",
