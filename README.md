@@ -111,12 +111,12 @@ For a comprehensive breakdown of the experiments, harness pollution analysis, MI
 
 ## 🔬 6. Experimento 03: Engenharia Reversa de Harnesses & DeepAgents com Auto-Memory
 
-Engenharia reversa das injeções de harness do **Claude Code CLI** e **OpenAI Codex CLI** via MITM Proxy, revelando system prompts, discovery de skills/MCPs, gerenciamento de contexto e reasoning effort.
+Engenharia reversa das injeções de harness do **Claude Code CLI** (requests capturados) e **OpenAI Codex CLI** (só o prompt de entrada e handshakes MCP) via MITM Proxy, revelando system prompts, discovery de skills/MCPs, gerenciamento de contexto e reasoning effort.
 
 Replicado no DeepAgents com:
 - **Auto-Memory Persistente**: Índice mestre `MEMORY.md` com arquivos `<slug>.md` estruturados em frontmatter YAML (`user`, `feedback`, `project`, `reference`).
 - **Context Deferred**: Skills catalog leve e carregamento sob demanda (`load_skill`).
-- **Logs Estruturados & Auto-Revisão (Crítica Epistêmica)**: Validação de acurácia e compliance antes da resposta final.
+- **Logs Estruturados & Auto-Revisão (Crítica Epistêmica)**: revisão por LLM do log de execução antes da resposta final; o veredito não bloqueia o fluxo (ver a errata em `report.md`).
 - **Self-Improvement Loop**: Mutação contínua de memória e ontologia a cada interação.
 
 ```bash

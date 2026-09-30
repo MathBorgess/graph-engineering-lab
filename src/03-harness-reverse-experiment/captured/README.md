@@ -15,7 +15,7 @@ Antes de publicar, os identificadores pessoais foram trocados por placeholders (
 
 O que continua nos arquivos, de propósito, por ser o objeto do estudo: system prompts, schemas de tools e MCPs, listagens de skills e o texto integral dos turnos. Não há tokens, chaves ou credenciais (varredura por `sk-ant-`, `accessToken`, `refreshToken`, `claudeAiOauth`, `ghp_`, `AKIA`, `-----BEGIN`).
 
-Tamanhos: os arquivos são JSON indentado; o request real em JSON compacto é ~25% menor (ex.: 474 KB no arquivo, ~360 KB no corpo).
+Tamanhos: os arquivos são JSON indentado; o corpo compacto é ~24% menor que o arquivo (o arquivo é ~1,32× o corpo; ex.: 474 KB no arquivo, ~358 KB no corpo). O tamanho real na rede não foi gravado.
 
 ## Limites das capturas (lidos do código do proxy e dos próprios arquivos)
 
@@ -24,3 +24,4 @@ Tamanhos: os arquivos são JSON indentado; o request real em JSON compacto é ~2
 - **Claude foi capturado em modo headless** (`claude -p`, `cc_entrypoint=sdk-cli`, identidade "Claude agent built on the Claude Agent SDK"), não em sessão interativa.
 - **Codex:** o proxy só recebeu 19 chamadas JSON-RPC `initialize` (MCP). O prompt do Codex vem de `codex debug prompt-input`, não de tráfego de inferência.
 - Reproduzir os números: `python ../analyze_payloads.py`.
+- **Headers:** cada `*_summary.json` do Claude guarda `headers_inspected` (`anthropic-*` e `x-*`, sem credencial). O `anthropic-beta` é idêntico nos 16 requests. O valor de `x-claude-code-session-id` foi trocado por `<REDACTED_SESSION_ID>`.

@@ -4,9 +4,11 @@
 **Repositório:** `graph-engineering-lab`  
 **Experimento:** `src/03-harness-reverse-experiment`  
 **Data:** Setembro de 2026  
-**Status:** Implementado, Validado em 2 Turnos e Funcional  
+**Status:** Implementado; testado em 2 turnos (n = 1); revisado em 2026-09-30 (ver Errata)  
 
 ---
+
+> **Errata (2026-09-30).** A especificação de auto-memory do Claude Code (§1.1, §1.3) foi conferida no `system[2]` capturado e está correta (tipos, exclusões que valem mesmo se o usuário pedir, índice sempre carregado e truncado após 200 linhas, verificar antes de recomendar). **Corrigido na réplica:** a gravação é disparada por 11 substrings, não pelo `auto_review`; o grafo é linear (0 arestas condicionais), não cíclico; o recall é sobreposição de palavras (top-3, sem limiar); o nó de execução dispara tools por palavra-chave e ignora `required_actions`; o veredito da auto-revisão não tem consequência e vira `is_accurate: true` (0,95) quando a saída tem chaves e JSON inválido. **Relato sem artefato:** o pipeline do Codex (§1.2). O teste de 2 turnos (§4) é n = 1, com 1 memória no índice.
 
 ## 📌 Sumário Executivo
 
@@ -68,6 +70,8 @@ metadata:
 ---
 
 ### 1.2 No OpenAI Codex CLI: A Arquitetura do Memory Raw e do Consolidation Agent
+
+> **Nota de evidência:** esta seção vem de inspeção local de `~/.codex/`, sem artefato no repositório; os itens de entrada capturados do Codex não trazem conteúdo de memória. Tratar como relato/hipótese.
 
 Enquanto o Claude Code adota uma abordagem puramente baseada em LLM inline (o próprio modelo do turno atual decide e invoca ferramentas de escrita/edição), a engenharia reversa do executável do **OpenAI Codex** e a inspeção forense de `~/.codex/` revelaram uma arquitetura de nível de engenharia de software muito mais robusta: **um pipeline assíncrono em duas etapas (Stage 1 e Stage 2) operado por um banco SQLite relacional, uma fila distribuída de jobs com leases e um repositório Git local dedicado**.
 
@@ -311,10 +315,10 @@ Como o agente sabe se deve criar um novo arquivo ou alterar um já existente?
 
 | Dimensão | Claude Code CLI (Anthropic) | OpenAI Codex CLI | DeepAgents LangGraph (`deepagents_self_improving.py`) |
 | :--- | :--- | :--- | :--- |
-| **Quem decide a escrita** | O próprio modelo LLM no turno interativo via tool calls (`Write`/`Edit`). | **Memory Consolidation Agent** assíncrono em segundo plano (Phase 2 heartbeat). | O nó **`auto_review`** audita logs de execução e o nó **`self_improve_and_consolidate`** persiste. |
-| **Sobrecarga de Turno** | Consome tool calls e tokens no próprio turno do usuário. | Zero overhead de inferência no turno interativo (delegado ao background). | Executado de forma determinística no pipeline cíclico do grafo (Node 3 $\to$ Node 4). |
+| **Quem decide a escrita** | O próprio modelo LLM no turno interativo via tool calls (`Write`/`Edit`). | **Memory Consolidation Agent** assíncrono em segundo plano (Phase 2 heartbeat). | O nó **`self_improve_and_consolidate`** grava quando o pedido contém uma de 11 substrings (`lembre-se`, `sempre`, `always`, `prefiro`, `nunca`…), sempre como `feedback`, com a mensagem inteira do usuário e `why`/`how_to_apply` fixos. O `auto_review` (LLM) não decide a escrita. |
+| **Sobrecarga de Turno** | Consome tool calls e tokens no próprio turno do usuário. | Zero overhead de inferência no turno interativo (delegado ao background). | Executado no pipeline linear do grafo (Node 1 $\to$ Node 4), sem arestas condicionais. |
 | **Estrutura de Armazenamento** | Arquivos `.md` individuais com YAML frontmatter + `MEMORY.md`. | Banco `memories_1.sqlite` bruto + `memory_summary.md` consolidado. | Arquivos `.md` individuais com frontmatter + `MEMORY.md` + Triplas no Grafo Ontológico. |
-| **Garantia contra Inchaço** | Limite estrito de 200 linhas no índice `MEMORY.md` com truncamento. | Compressão periódica dos logs SQLite em sumários de alto nível. | Poda pelo índice de relevância top-k e enriquecimento semântico da ontologia. |
+| **Garantia contra Inchaço** | Limite estrito de 200 linhas no índice `MEMORY.md` com truncamento. | Compressão periódica dos logs SQLite em sumários de alto nível. | Recall por sobreposição de palavras (top-3, sem limiar); não há limite nem poda do índice (só `max_entries=100` na leitura). |
 
 ---
 
@@ -345,14 +349,14 @@ O grande desafio de sistemas agenticos modernos é a sobrecarga de ferramentas: 
 
 ## 3. Replicando a Arquitetura em DeepAgents (`deepagents_self_improving.py`)
 
-No nosso laboratório, replicamos essa arquitetura completa em um grafo cíclico de 4 nós em LangGraph:
+No nosso laboratório, replicamos o encanamento dessa arquitetura em um grafo linear de 4 nós em LangGraph:
 
 ```mermaid
 flowchart TD
-    START([START]) --> Plan["🧠 Node 1: Plan & Recall\n• Lê índice MEMORY.md\n• Carrega apenas memórias relevantes\n• Avalia gatilhos de Skills Deferred\n• Gera Contrato de Diretiva"]
-    Plan --> Exec["⚙️ Node 2: Execution & Structured Logs\n• Carrega SKILL.md on-demand (Context Deferred)\n• Executa ferramentas dos subagentes\n• Registra logs com latência e status"]
-    Exec --> Review["🔍 Node 3: Auto-Revisão (Epistemic Critique)\n• Audita execution_logs contra a Diretiva\n• Verifica compliance com regras de feedback\n• Atribui score de confiança e detecta falhas"]
-    Review --> Consolidate["🚀 Node 4: Self-Improvement & Consolidation\n• Extrai novas regras -> Salva <slug>.md e MEMORY.md\n• Extrai novas entidades -> Expande Grafo Ontológico\n• Sintetiza resposta final grounded"]
+    START([START]) --> Plan["🧠 Node 1: Plan & Recall\n• Lê índice MEMORY.md\n• Carrega as top-3 por sobreposição de palavras (sem limiar)\n• Avalia gatilhos de Skills Deferred\n• Gera Contrato de Diretiva"]
+    Plan --> Exec["⚙️ Node 2: Execution & Structured Logs\n• Carrega SKILL.md on-demand (Context Deferred)\n• Dispara tools por palavra-chave no pedido (ignora required_actions)\n• Registra logs com latência e status"]
+    Exec --> Review["🔍 Node 3: Auto-Revisão (Epistemic Critique)\n• Audita execution_logs contra a Diretiva\n• Verifica compliance com regras de feedback\n• Atribui score (LLM); sem consequência no grafo"]
+    Review --> Consolidate["🚀 Node 4: Self-Improvement & Consolidation\n• Se o pedido tem uma das 11 substrings -> Salva <slug>.md e MEMORY.md\n• Extrai novas entidades -> Expande Grafo Ontológico\n• Sintetiza resposta final grounded"]
     Consolidate --> END_NODE([END])
 ```
 
@@ -379,7 +383,8 @@ class SelfImprovingState(TypedDict):
 
 ## 4. Validação Experimental em 2 Turnos
 
-Executamos o teste automatizado de 2 turnos com o backend Codex via nosso proxy local (`python src/03-harness-reverse-experiment/deepagents_self_improving.py --test`):
+Executamos o teste automatizado de 2 turnos com o backend Codex via nosso proxy local (`python src/03-harness-reverse-experiment/deepagents_self_improving.py --test`). **Limites:** 1 execução, 1 regra, 1 memória no índice com `top_k = 3` sem limiar (a única memória é devolvida para qualquer consulta, inclusive sem relação); nenhum log da execução foi guardado.
+
 
 ### 4.1 Turno 1: Aprendizado e Criação de Memória
 - **Instrução do Usuário:**  
@@ -397,8 +402,8 @@ Executamos o teste automatizado de 2 turnos com o backend Codex via nosso proxy 
 - **Comportamento Observado:**
   1. O nó `plan_and_recall` consultou o índice `MEMORY.md`, localizou a memória de preferência `pref-1790680343` e a carregou no contexto.
   2. A diretiva impôs: *"Formatar todos os cálculos estritamente em KB e MB conforme memória de feedback ativa"*.
-  3. Ambas as skills `graph-rag-optimizer` e `system-profiler` foram ativadas e lidas sob demanda via Context Deferred.
-  4. A resposta final entregou o cálculo exato formatado em **KB e MB**:
+  3. Ambas as skills `graph-rag-optimizer` e `system-profiler` foram ativadas e lidas sob demanda via Context Deferred. *(Não verificável sem o log: pelo código, o gatilho por substring ativa só `system-profiler` neste pedido, por "os" dentro de "nosso"; `graph-rag-optimizer` só entraria se a diretiva do LLM a listasse.)*
+  4. A resposta final entregou o cálculo formatado em **KB e MB** (a conta veio da síntese do LLM: a tool `calculate` não dispara para esse pedido, que não tem expressão com operador):
      `45.000 × 1 KB = 45.000 KB ≈ 43,95 MB`, cumprindo a preferência automaticamente sem necessidade de reforço pelo usuário.
 
 ---
@@ -431,10 +436,10 @@ Antes de responder ao usuário, o DeepAgent 1 executa uma reflexão crítica con
 
 ## 6. Conclusões e Guia de Uso
 
-A implementação demonstra que é possível atingir paridade arquitetural com os melhores harnesses comerciais (Claude Code e OpenAI Codex) utilizando LangGraph:
-1. **O contexto permanece limpo** através do catálogo diferido de skills.
-2. **O agente não esquece preferências** graças ao motor de arquivos `MEMORY.md` com frontmatter.
-3. **O agente audita suas próprias ações** através do nó de auto-revisão de logs.
+A implementação reproduz o **encanamento** (índice de uma linha, arquivos tipados com frontmatter, skills diferidas, logs por passo) em LangGraph. Não reproduz a decisão de memória do Claude Code: quem decide é uma lista de substrings, e dedupe, fronteira negativa e verificação de obsolescência não estão implementados.
+1. **O corpo das skills só entra quando acionado**, através do catálogo diferido (o planejador ainda recebe o catálogo e as memórias recuperadas).
+2. **A preferência sobreviveu ao segundo turno** graças ao motor de arquivos `MEMORY.md` com frontmatter (testado com 1 memória).
+3. **Há uma revisão por LLM das próprias ações** no nó de auto-revisão de logs; ela não bloqueia o fluxo e pode devolver aprovação por falha de parse.
 
 Para rodar o modo interativo e testar novos cenários de autoaperfeiçoamento:
 ```bash

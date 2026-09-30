@@ -8,6 +8,8 @@
 
 ---
 
+> **Errata (2026-09-30).** A tese central ("poluição de harness" degrada o agente), os números da §1.2 (cold-start de ~800 ms a 2,5 s, hooks com timeout) e a matriz da §5 (latência, pureza semântica, resistência a alucinações) são **qualitativos ou relatados, não medidos** no repositório. O que o experimento 03 mediu é o **peso** do request do Claude Code (140–359 KB; tools em 70–88% do corpo). Acurácia, foco e latência com e sem harness continuam sem medição.
+
 ## 📌 Sumário Executivo
 
 Este documento consolida o ciclo completo de pesquisa, experimentação prática e decisões de arquitetura desenvolvidas no `graph-engineering-lab`. 

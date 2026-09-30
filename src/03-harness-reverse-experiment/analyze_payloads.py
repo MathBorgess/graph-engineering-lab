@@ -10,7 +10,7 @@ Usage:
     python analyze_payloads.py DIR        # report for another capture directory
 
 Sizes are compact JSON bytes (separators=(",", ":")). The capture files are
-indented, so their size on disk is ~25% larger than the real request body.
+indented, so their size on disk is ~32% larger (1.32x) than the compact body.
 Captures hold requests only (no `usage`), so nothing here is a token count or
 a measured cache hit; it is structure and bytes.
 """

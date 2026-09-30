@@ -188,41 +188,35 @@ def build_markdown_report(results: List[Dict[str, Any]], captured_summaries: Lis
 **Modelos Avaliados:** Claude Sonnet 5 (`sonnet` → `claude-sonnet-5`, `--effort high`) | OpenAI Codex (`gpt-6-luna`, `model_reasoning_effort="high"`)  
 **Estratégia de Intercepção:** MITM Proxy em `http://127.0.0.1:9300`  
 
+> **Errata (2026-09-30).** Revisado contra os 72 arquivos de `captured/` (ver `captured/README.md`). **Corrigido:** modelo (`claude-sonnet-5`); tamanho do request (140–359 KB em JSON compacto, não ~310 KB); nº de tools (38–183, 27–28 nativas); tamanho do system prompt do Claude (27,6k caracteres, não 300 KB); `thinking` (`adaptive`/`omitted`, sem `budget_tokens`); headers `anthropic-beta` (estão nos `*_summary.json`); flag de mudança de tools (`mid-conversation-tool-changes-…` não foi enviada). **Sem lastro nas capturas** (relato, marcado no texto): aviso "Skill descriptions were shortened…", regras de leitura de skills, salvaguardas destrutivas, hooks locais e `trust_level` do Codex, tokens de raciocínio do Codex; os tempos de execução não são latência limpa.
+
 ---
 
 ## 📑 1. Sumário Executivo das Descobertas
 
-Por meio da intercepção direta via proxy reverso (MITM) posicionado entre os executáveis locais (`claude` e `codex`) e as APIs oficiais na nuvem (`api.anthropic.com` e `chatgpt.com/backend-api`), capturamos a **totalidade dos dados brutos** injetados por cada CLI antes do modelo processar o primeiro token.
+Por meio da intercepção direta via proxy reverso (MITM) posicionado entre os executáveis locais (`claude` e `codex`) e as APIs oficiais na nuvem (`api.anthropic.com` e `chatgpt.com/backend-api`), capturamos os corpos dos requests do Claude (16 requests, em 8 pares `stream: true`/`false`) e, do Codex, apenas 19 handshakes MCP `initialize` e a saída de `codex debug prompt-input` (itens de entrada, não tráfego de inferência). Não há respostas do modelo nem `usage`.
 
 ### Principais Revelações da Engenharia Reversa:
 
 | Dimensão de Análise | Claude Code CLI (v2.1.278) | OpenAI Codex CLI (v0.155.1) |
 | :--- | :--- | :--- |
-| **System Prompt Inicial** | **Massivo: ~27,6k caracteres de system prompt (3 blocos) + 165–183 schemas de tools; request de ~332–360 KB em JSON compacto** (o arquivo capturado tem 437–475 KB por estar indentado). | **~31,1k caracteres de texto** obtidos com `codex debug prompt-input` (bloco de skills de 21,8k; 125 skills). Não é tráfego de inferência: o proxy só capturou 19 handshakes MCP `initialize` do Codex. |
-| **Primeiras Tools Nativas** | 27 nativas no schema JSON da API (`Agent`, `Bash`, `Edit`, `Read`, `Write`, `NotebookEdit`, `Skill`, `WebFetch`, `WebSearch`, `Monitor`, …; sem `Glob`/`Grep` dedicados) + 138–156 tools de MCP, que variam por execução. | Exposto via formato de respostas/tools e protocolo MCP interno (`/backend-api/ps/mcp`). |
-| **Descoberta de MCPs e Skills** | Protocolo unificado de Skills/Plugins no prompt + headers de beta `advisor-tool-2026-03-01`. | **Descrições de skills cortadas em ~100 caracteres** (no meio da palavra; 125 skills) e referências por alias de raiz (`r0`…). O texto do aviso *"Skill descriptions were shortened…"* **não aparece** nas capturas. |
-| **Mecanismo de Context Engine** | **Prompt Caching Scope + Ephemeral Caching** (`prompt-caching-scope-2026-01-05`, `extended-cache-ttl-2025-04-11`). | Injeção de hooks locais (`SessionStart`, `UserPromptSubmit`), git status e diretórios confiáveis (`projects.trust_level`). |
-| **Mecanismo de Reasoning Effort** | `output_config: {{"effort": "high"}}` + `thinking: {{"type": "adaptive", "display": "omitted"}}` (verificado no corpo do request). | Campo `model_reasoning_effort = "high"` que instrui o backend a reservar tokens internos de raciocínio. |
+| **System Prompt Inicial** | **~27,6k caracteres de system prompt (3 blocos) + 38–183 schemas de tools (varia por execução); request de ~140–359 KB em JSON compacto, com as tools em 70–88% do corpo** (o arquivo capturado tem 161–475 KB porque o proxy grava com `indent=2`). | **~31,1k caracteres de texto** obtidos com `codex debug prompt-input` (bloco de skills de 21,8k; 125 skills). Não é tráfego de inferência: o proxy só capturou 19 handshakes MCP `initialize` do Codex. A saída mostra só os itens de entrada; o `instructions` (prompt-base) não aparece, então o "~45k" citado antes não está confirmado nem refutado. |
+| **Primeiras Tools Nativas** | 27–28 nativas no schema JSON da API (`Agent`, `Bash`, `Edit`, `Read`, `Write`, `NotebookEdit`, `Skill`, `WebFetch`, `WebSearch`, `Monitor`, …; sem `Glob`/`Grep` dedicados) + 11–156 tools de MCP: os plugins locais estavam em todas as execuções; os conectores claude.ai chegaram no turno 0 ou só no turno 2. | Cliente MCP `codex-mcp-client` 0.155.1, protocolo `2025-06-18` (verificado nas 19 chamadas `initialize` em `/backend-api/ps/mcp`). As tools do modelo não foram capturadas. |
+| **Descoberta de MCPs e Skills** | Tools de MCP com schema completo no turno 0 (sem `defer_loading` nem tool de busca); tool `Skill` de 1,4 KB e **sem catálogo de skills** no request `-p`; header de beta `advisor-tool-2026-03-01` presente. | **Descrições de skills cortadas em ≤92 caracteres** (112 de 125 no meio da frase) e referências por alias de raiz (`r0`…`r26`, 27 raízes). O texto do aviso *"Skill descriptions were shortened…"* **não aparece** nas capturas. |
+| **Mecanismo de Context Engine** | **Prompt Caching Scope + Ephemeral Caching** (`prompt-caching-scope-2026-01-05`, `extended-cache-ttl-2025-04-11`): `cache_control` `ephemeral` de 1 h em `system[1]` e `system[2]` e 1–2 pontos na cauda de `messages`; nenhum em `tools`, que ficam cobertas pelo prefixo. | `<environment_context>` (cwd, shell, data, fuso, raízes do workspace, perfil de sistema de arquivos) e `<permissions instructions>` (`sandbox_mode: read-only`, regras de prefixo). Não aparecem `SessionStart`, `UserPromptSubmit`, `git status` nem `trust_level`. |
+| **Mecanismo de Reasoning Effort** | `output_config: {{"effort": "high"}}` + `thinking: {{"type": "adaptive", "display": "omitted"}}` (verificado no corpo do request) + header `anthropic-beta: effort-2025-11-24,interleaved-thinking-2025-05-14,thinking-token-count-2026-05-13` (verificado nos `*_summary.json`). | Passado por linha de comando (`-c model_reasoning_effort="high"`); o request de inferência do Codex não foi capturado, então o campo enviado ao backend **não foi verificado**. |
 
 ---
 
 ## 2. Anatomia do System Prompt Injetado
 
 ### 2.1 Claude Code CLI
-O Claude Code injeta um system prompt que ultrapassa **300.000 bytes** no primeiro turno. Ele divide o prompt em blocos modulares:
-1. **Identidade e Postura Operacional:** Define o agente como assistente de engenharia de software pragmático, direto e com foco em ações de baixo ruído.
-2. **Políticas de Leitura e Edição:** Instruções estritas sobre leitura de arquivos antes de edição (`Read` antes de `Edit`), preservação de comentários e estilo existente.
-3. **Restrições de Terminal (Bash):** Proibição de comandos interativos não assistidos, gerenciamento de pipes e timeouts.
-4. **Gerenciamento de Subagentes e Delegação:** Protocolos para spawns de subagentes paralelos e agregação de respostas.
+O campo `system` tem **3 blocos e ~27,6k caracteres** (o request inteiro tem 140–359 KB por causa das tools). Seções do bloco 2, por tamanho: `# auto memory` (12,8k, 47%), `# Executing actions with care` (3,6k), `# Doing tasks` (3,3k), `# System` (2,0k), `# Text output` (1,7k), `# Session-specific guidance` (0,8k), `# Tone and style`, `# Using your tools`, `# Environment` e `# Context management` (~0,6k cada) e a abertura (0,8k). O contexto volátil (`gitStatus`, e-mail, `AGENTS.md`, atribuição de commit) vai em `<system-reminder>` no primeiro `user`; o ambiente e as instruções de MCP vêm em mensagens `role: "system"` dentro de `messages`.
 
 ### 2.2 OpenAI Codex CLI
-O Codex compila seu prompt internamente combinando:
-1. **Diretrizes de Ações Destrutivas:** Salvaguardas severas proibindo operações como `rm -rf $HOME` ou comandos recursivos sobre caminhos não validados.
-2. **Protocolo de Skills (`SKILL.md`):** Regras explícitas de como descobrir e carregar skills:
-   - Se uma skill for mencionada ou relevante, o agente **deve ler o `SKILL.md` integralmente** antes de tomar qualquer ação.
-   - Proibição estrita de delegar a leitura de `SKILL.md` para subagentes (*"The main agent must read each required instruction itself"*).
-   - Uso do canal `commentary` para explicar por que uma skill foi selecionada.
-3. **Progressive Disclosure:** Regra explícita de carregar referências secundárias apenas sob demanda para proteger o orçamento de contexto.
+Os itens de entrada capturados (`codex debug prompt-input`, 31,1k caracteres) são: `<skills_instructions>` (21,8k; 125 skills), `<permissions instructions>` (4,2k: `sandbox_mode: read-only`, escalonamento por aprovação, comando segmentado nos operadores de shell, `prefix_rule` com prefixos banidos; ação destrutiva não pedida, como `rm` ou `git reset`, exige escalonamento), `<collaboration_mode>` (0,9k), `<multi_agent_role>` (2,4k), `<multi_agent_mode>` (0,3k), `<recommended_plugins>` (0,9k) e `<environment_context>` (0,5k).
+
+**Não encontrado nas capturas** (pode estar no `instructions`, que a saída não mostra): salvaguardas do tipo `rm -rf $HOME`/`mktemp -d`/lixeira; a regra *"The main agent must read each required instruction itself…"*; o canal `commentary` para explicar a escolha de skill; a regra de progressive disclosure de referências.
 
 ---
 
@@ -231,10 +225,10 @@ O Codex compila seu prompt internamente combinando:
 ### Como cada harness controla a expansão de ferramentas:
 - **No Claude Code:**
   - As ferramentas primárias (`Bash`, `Edit`, `Read`, etc.) são enviadas no array `tools` da chamada `POST /v1/messages`.
-  - A descoberta de MCPs externos e plugins opera através de ferramentas dedicadas e canais de streaming de eventos, utilizando flags beta como `mid-conversation-tool-changes-2026-07-01`.
+  - Os schemas das tools de MCP (conectores claude.ai e plugins locais) vêm **inteiros** no array `tools`; nessa versão não há `defer_loading` nem tool de busca. O conjunto muda no meio da conversa (38 → 183 tools no turno 2 da tarefa 03; 165 → 184 na tarefa 02) editando o campo `tools`. O beta relevante é `mid-conversation-system-2026-04-07` (mensagens `role: system` em `messages`); `mid-conversation-tool-changes-2026-07-01` **não** foi enviado.
 - **No Codex CLI:**
-  - O Codex possui um endpoint dedicado `/backend-api/ps/mcp` e `/backend-api/ps/plugins/suggested/codex`.
-  - Quando o número de skills ou plugins instalados excede o limite de tokens da janela inicial, o Codex ativa uma heurística de **compressão de descrições**: encurta o texto das skills para que todas caibam no cabeçalho inicial, permitindo que o modelo decida quando carregar o arquivo completo.
+  - O Codex chama `/backend-api/ps/mcp` (19 `initialize` capturados). O endpoint `/backend-api/ps/plugins/suggested/codex` **não aparece** nas capturas.
+  - Quando o número de skills ou plugins instalados excede o limite de tokens da janela inicial, o Codex ativa uma heurística de **compressão de descrições**: encurta o texto das skills (corte observado: ≤92 caracteres, 112 de 125 no meio da frase); o motivo (caber no orçamento de contexto) é inferência.
 
 ---
 
@@ -242,7 +236,7 @@ O Codex compila seu prompt internamente combinando:
 
 Uma das maiores dúvidas em sistemas agenticos é o que o parâmetro `effort: high` altera na prática. A captura MITM revelou:
 
-### 4.1 No Anthropic Claude (Sonnet / Extended Thinking)
+### 4.1 No Anthropic Claude (Sonnet 5 / thinking adaptativo)
 - **Parâmetro de Rede:** A requisição envia:
   ```json
   "thinking": {{
@@ -251,19 +245,19 @@ Uma das maiores dúvidas em sistemas agenticos é o que o parâmetro `effort: hi
   }},
   "output_config": {{ "effort": "high" }}
   ```
-  Os headers `anthropic-beta` **não foram persistidos** nas capturas do Claude; qualquer valor de header citado antes era inferência e não está verificado.
+  O `anthropic-beta` está em `headers_inspected` dos `*_summary.json` (idêntico nas 16 capturas): `claude-code-20250219, oauth-2025-04-20, interleaved-thinking-2025-05-14, thinking-token-count-2026-05-13, context-management-2025-06-27, prompt-caching-scope-2026-01-05, mid-conversation-system-2026-04-07, advisor-tool-2026-03-01, effort-2025-11-24, extended-cache-ttl-2025-04-11`.
 - **Comportamento em Execução:**
   - Blocos `type: "thinking"` do assistant voltam ao histórico com texto **vazio** (`display: "omitted"`) e só a assinatura.
   - A magnitude do raciocínio **não foi medida**: as capturas contêm apenas requests, sem `usage`. Os números de 16k–32k tokens citados antes não têm lastro nas capturas.
 
 ### 4.2 No OpenAI Codex (GPT-6 Luna / Sol Reasoning Models)
-- **Parâmetro de Rede:** O payload para o endpoint do backend envia a diretiva:
+- **Parâmetro de Rede (relatado, não verificado: o request de inferência do Codex não foi capturado; a diretiva vem de `-c model_reasoning_effort="high"`):**
   ```json
   "reasoning_effort": "high"
   ```
 - **Comportamento em Execução:**
   - O modelo aloca tokens internos de raciocínio não-visíveis (reasoning tokens) que computam os caminhos lógicos antes de emitir a resposta ou chamada de ferramenta.
-  - No log de execução, o consumo de tokens salta de ~1k tokens em chamadas simples para **12k a 22k tokens** no mesmo prompt, demonstrando o gasto real de inferência dedicada à cadeia de reflexão.
+  - Relatado no log de execução do CLI (não há `usage` nas capturas): ~1k tokens em chamadas simples contra 12k a 22k no mesmo prompt.
 
 ---
 
@@ -282,6 +276,8 @@ Uma das maiores dúvidas em sistemas agenticos é o que o parâmetro `effort: hi
         md += f"| `{r['task_id']}` | **{r['harness'].upper()}** | {status} | {r['elapsed_seconds']}s | {out_snippet}... |\n"
 
     md += """
+**Leitura da tabela.** `Sucesso` quer dizer que o processo terminou com código 0, não que a resposta esteja correta. Cada request do Claude aparece duas vezes (`stream: true`, depois `stream: false`, corpos idênticos), então os tempos incluem esse retorno e não são latência limpa; n = 1 por célula e não há execução com effort menor como linha de base.
+
 ---
 
 ## 6. Arquivos e Payloads Brutos Capturados
@@ -289,7 +285,7 @@ Uma das maiores dúvidas em sistemas agenticos é o que o parâmetro `effort: hi
 Os payloads JSON integrais de cada chamada encontram-se salvos no diretório:
 👉 [`src/03-harness-reverse-experiment/captured/`](file://""" + str(CAPTURED_DIR) + """)
 
-Cada captura contém os headers HTTP autênticos, o payload completo enviado ao provedor e os metadados extraídos pelo interceptador.
+O corpo de cada request fica no `.json`; o `*_summary.json` guarda um resumo e os headers `anthropic-*`/`x-*` (nunca a credencial). Não há respostas nem `usage`: o proxy não grava a resposta em streaming. Os identificadores pessoais foram trocados por placeholders (ver `captured/README.md`).
 """
 
     with open(REPORT_FILE, "w", encoding="utf-8") as f:
