@@ -4,61 +4,42 @@ Experiments with Agentic Workflows, Knowledge Graphs, and Local LLM Tooling.
 
 ---
 
-## 🌐 Subscription Reverse Proxy (`subscription_proxy.py`)
+## 🌐 Native subscription proxies
 
-A reverse-authenticated proxy for **OpenAI** and **Anthropic** that lets you run **LangChain**, **LangGraph**, and **DeepAgents** directly against frontier models using your active **Claude Pro** and **ChatGPT Plus/Pro Codex** subscriptions — without paying for separate API credits and with **zero proxy-side model inference**.
+Two independent local transports. LangChain handles tool schemas, tool call IDs,
+tool results and streaming; the proxies inject subscription credentials and forward HTTP.
 
-### 🏗️ Architecture
-
-```mermaid
-flowchart LR
-    subgraph Client["Your Agent Code"]
-        Agent["LangChain / LangGraph / DeepAgents"] -->|OpenAI Chat API :8000| LLMClient["ChatOpenAI(base_url='http://127.0.0.1:8000/v1')"]
-    end
-
-    subgraph Proxy["Subscription Reverse Proxy (src/subscription_proxy.py)"]
-        LLMClient -->|/v1/chat/completions| FastAPI[FastAPI Proxy]
-        FastAPI --> Router{Auth & Transport Router}
-    end
-
-    subgraph CloudAPIs["Upstream Cloud APIs (Pure REST / SSE)"]
-        Router -->|"OpenAI Models (gpt-6-sol, etc.)"| CodexAPI["https://chatgpt.com/backend-api/codex/responses<br/>(OAuth via ~/.codex/auth.json)"]
-        Router -->|"Claude Models (haiku, sonnet, opus)"| AnthropicAPI["https://api.anthropic.com/v1/messages<br/>(OAuth via macOS Keychain)"]
-    end
-```
-
-### Key Differences from CLI Subprocesses & MITM Gateways:
-- **No Proxy-Side Model Inference**: The proxy does zero inference, runs no local LLMs, and injects no decision models. It is strictly an authentication and protocol translation layer.
-- **No Subprocess Harness**: Does not execute `claude -p` or `codex exec`, eliminating CLI startup latency, git worktree checks, hooks, terminal formatting, and agent persona injection.
-- **True Real-Time Streaming**: Directly pipes Server-Sent Events (SSE) from the upstream cloud APIs to your client.
-- **Native Tool Calling**: Automatically translates standard OpenAI `tools` and `tool_calls` schemas to Anthropic and Codex native formats.
-
----
-
-## 🚀 Setup & Quickstart
-
-### 1. Requirements
+| Provider | Start | Endpoint | LangChain client |
+| --- | --- | --- | --- |
+| Codex | `python -m proxy.codex` | `http://127.0.0.1:8000/v1/responses` | `ChatOpenAI(use_responses_api=True)` |
+| Claude | `python -m proxy.claude` | `http://127.0.0.1:8001/v1/messages` | `ChatAnthropic` |
 
 ```bash
-source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r proxy/requirements.txt
+python -m unittest discover -s proxy/tests -v
 ```
 
-### 2. Start the Proxy Server
+```python
+from proxy.client import create_model
 
-```bash
-# Starts proxy on http://127.0.0.1:8000 (default backend: codex)
-python src/subscription_proxy.py --port 8000
-
-# Or with Claude as default:
-python src/subscription_proxy.py --port 8000 --backend claude
+codex = create_model("codex", "gpt-6-sol")
+claude = create_model("claude", "claude-sonnet-4-6")
+# Both expose native LangChain bind_tools(), invoke() and stream().
 ```
 
-### Endpoints:
-- `GET /health`: Health status & active subscription authentication detection.
-- `GET /v1/models`: List of models available through your subscriptions.
-- `POST /v1/chat/completions`: Standard OpenAI Chat Completions endpoint (streaming & non-streaming).
-- `POST /v1/responses`: OpenAI Responses API endpoint.
+Use a concrete model supported by your account. Offline tests use simulated upstreams;
+live subscription compatibility remains unverified. See [proxy documentation](proxy/README.md).
+
+`python src/subscription_proxy.py --backend codex` remains a launcher;
+`--backend claude` starts the separate Claude server on port 8001.
+`GET /health` checks server availability only.
+
+### Historical experiments
+
+The scripts below still use the former Chat Completions gateway and model aliases.
+Their model construction must be migrated to `proxy.client.create_model()` before
+running against these native proxies. `/v1/chat/completions` and `/v1/models`
+are no longer exposed. The factory study spec uses the new constructor.
 
 ---
 
