@@ -202,17 +202,41 @@ def validate_codebase_static(
     all_issues: List[Issue] = []
 
     files_to_check: List[Path] = []
-    if target_files:
+    ignored_dirs = {".venv", "venv", ".git", "__pycache__", ".pytest_cache", ".ruff_cache", "site-packages"}
+
+    if target_files is not None:
+        if len(target_files) == 0:
+            return ValidationResult(
+                validator_name="static_code_analysis",
+                status="pass",
+                command_or_rule="sonarqube_ast_rules",
+                exit_code=0,
+                details="Nenhum arquivo Python alterado no diff para análise estática (NO_CHANGES).",
+                requires_interrupt=False,
+                issues=[],
+            )
         for f in target_files:
             p = (base / f).resolve()
             if not p.exists() and f.startswith(f"{base.name}/"):
                 p = (base / f[len(base.name) + 1:]).resolve()
             if not p.exists() and (base.parent / f).exists():
                 p = (base.parent / f).resolve()
-            if p.exists() and p.suffix == ".py":
+            if p.exists() and p.suffix == ".py" and not any(ignored in p.parts for ignored in ignored_dirs):
                 files_to_check.append(p)
+        if not files_to_check:
+            return ValidationResult(
+                validator_name="static_code_analysis",
+                status="pass",
+                command_or_rule="sonarqube_ast_rules",
+                exit_code=0,
+                details="Nenhum arquivo Python afetado pelo diff requer análise estática.",
+                requires_interrupt=False,
+                issues=[],
+            )
     else:
-        files_to_check = list(base.glob("**/*.py"))
+        for p in base.glob("**/*.py"):
+            if not any(ignored in p.parts for ignored in ignored_dirs):
+                files_to_check.append(p)
 
     for py_file in files_to_check:
         try:

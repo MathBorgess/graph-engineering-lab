@@ -1,0 +1,146 @@
+{
+  "case_id": "canary_4_mcp_docstring",
+  "round": "Round_3_Independent_Oracles",
+  "description": "Canário MCP: remoção de docstring da ferramenta",
+  "pre_registration": {
+    "hypothesis": "mcp_contract_validator deve reprovar com blocker MCP_TOOL_DOCSTRING_MISSING.",
+    "expected_route": "veto em mcp_contract_validator",
+    "failure_criterion": "mcp_contract_validator retorna pass"
+  },
+  "mutation": {
+    "verified": true,
+    "diff_hash": "ab8895a07fda53ee5133dbd7ca561e31cc8d0a28f9f39cc9da619e3f621ef71f",
+    "diff_snippet": "diff --git a/laya-computer/laya_computer/server.py b/laya-computer/laya_computer/server.py\nindex 68cfc64..a18adeb 100644\n--- a/laya-computer/laya_computer/server.py\n+++ b/laya-computer/laya_computer/server.py\n@@ -263,7 +263,7 @@ async def inspect(app_bundle_id: str, window_title: str | None = None,\n \n @srv.tool()\n async def preflight_plan(plan: dict) -> dict:\n-    \"\"\"Assess a candidate plan without observing or acting on the desktop.\"\"\"\n+    pass  # docstring removida intencionalmente para canár"
+  },
+  "is_valid": false,
+  "ready_for_human_acceptance": false,
+  "vetoed": true,
+  "veto_validator": "mcp_contract_validator",
+  "validation_results": [
+    {
+      "validator_name": "scope_validator",
+      "status": "pass",
+      "command_or_rule": "scope_whitelist_check",
+      "exit_code": 0,
+      "details": "Todos os 1 arquivos modificados estão dentro do escopo permitido.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "static_code_analysis",
+      "status": "pass",
+      "command_or_rule": "sonarqube_ast_rules",
+      "exit_code": 0,
+      "details": "SonarQube Static Analysis concluída: 3 apontamento(s) encontrado(s). Blockers/Critical: 0 | Major/Minor: 3.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "COGNITIVE_COMPLEXITY",
+          "category": "code_smell",
+          "severity": "major",
+          "file_path": "laya_computer/server.py",
+          "line_number": 136,
+          "step_id": null,
+          "message": "Profundidade de aninhamento (4) excede o limite recomendado (3).",
+          "suggestion": "Simplificar fluxo com early returns ou extração de métodos."
+        },
+        {
+          "code": "COGNITIVE_COMPLEXITY",
+          "category": "code_smell",
+          "severity": "major",
+          "file_path": "laya_computer/server.py",
+          "line_number": 162,
+          "step_id": null,
+          "message": "Profundidade de aninhamento (4) excede o limite recomendado (3).",
+          "suggestion": "Simplificar fluxo com early returns ou extração de métodos."
+        },
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "laya_computer/server.py",
+          "line_number": 294,
+          "step_id": null,
+          "message": "Função pública 'main' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        }
+      ]
+    },
+    {
+      "validator_name": "code_quality_tests",
+      "status": "pass",
+      "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
+      "exit_code": 0,
+      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 4.68s",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "mcp_contract_validator",
+      "status": "fail",
+      "command_or_rule": "mcp_tool_registration",
+      "exit_code": 1,
+      "details": "Tool MCP 'preflight_plan' validada. 1 issue(s) apontada(s).",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "EMPTY_TOOL_DOCSTRING",
+          "category": "code_smell",
+          "severity": "blocker",
+          "file_path": null,
+          "line_number": null,
+          "step_id": null,
+          "message": "A ferramenta MCP 'preflight_plan' não possui docstring / descrição de propósito.",
+          "suggestion": "Adicionar docstring concisa explicando a análise estática sem efeitos de desktop."
+        }
+      ]
+    }
+  ],
+  "dod_pillars": [
+    {
+      "name": "contract_conformance",
+      "passed": false,
+      "evidence": "Contrato MCP violado ou ausente.",
+      "details": [
+        "Tool MCP 'preflight_plan' validada. 1 issue(s) apontada(s)."
+      ]
+    },
+    {
+      "name": "test_suite_coverage",
+      "passed": true,
+      "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
+      "details": [
+        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 4.68s"
+      ]
+    },
+    {
+      "name": "sonarqube_quality_gate",
+      "passed": true,
+      "evidence": "Quality Gate SonarQube aprovado: zero falhas críticas ou bloqueantes.",
+      "details": [
+        "Total de apontamentos consultivos/menores: 3."
+      ]
+    },
+    {
+      "name": "repository_hygiene",
+      "passed": true,
+      "evidence": "Repositório limpo sem arquivos temporários espúrios e escopo validado.",
+      "details": [
+        "Nenhum resíduo de build ou arquivo temporário detectado."
+      ]
+    },
+    {
+      "name": "session_memory_recorded",
+      "passed": true,
+      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "details": [
+        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+      ]
+    }
+  ],
+  "llm_calls": []
+}

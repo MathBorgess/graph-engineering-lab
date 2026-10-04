@@ -1,0 +1,115 @@
+{
+  "case_id": "case_a9_blind_oracle",
+  "round": "Round_3_Independent_Oracles",
+  "description": "Lacuna conhecida de oráculo: reachability expandido para on_failure",
+  "pre_registration": {
+    "hypothesis": "A suíte atual não testa caminho negativo de on_failure, logo a esteira antiga APROVA (lacuna).",
+    "expected_route": "is_valid=True, ready_for_human_acceptance=True (lacuna confirmada a ser coberta no Passo 2)",
+    "failure_criterion": "veto prematuro sem oráculo de aceitação"
+  },
+  "mutation": {
+    "verified": true,
+    "diff_hash": "edf9bbd46d9597d517a24e0c731b30607fba5c88b90e166e5726582c7c7168ee",
+    "diff_snippet": "diff --git a/laya-computer/laya_computer/preflight.py b/laya-computer/laya_computer/preflight.py\nindex 0167f36..2f9400b 100644\n--- a/laya-computer/laya_computer/preflight.py\n+++ b/laya-computer/laya_computer/preflight.py\n@@ -33,10 +33,17 @@ def analyze_preflight_plan(plan_data: dict) -> dict:\n         result[\"status\"] = \"valid\"\n         reachable = set()\n         by_id = {step.id: step for step in plan.steps}\n-        current = plan.first_step_id\n-        while current is not None and current no"
+  },
+  "is_valid": true,
+  "ready_for_human_acceptance": true,
+  "vetoed": false,
+  "veto_validator": null,
+  "validation_results": [
+    {
+      "validator_name": "scope_validator",
+      "status": "pass",
+      "command_or_rule": "scope_whitelist_check",
+      "exit_code": 0,
+      "details": "Todos os 1 arquivos modificados estão dentro do escopo permitido.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "static_code_analysis",
+      "status": "pass",
+      "command_or_rule": "sonarqube_ast_rules",
+      "exit_code": 0,
+      "details": "SonarQube Static Analysis concluída: 1 apontamento(s) encontrado(s). Blockers/Critical: 0 | Major/Minor: 1.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "OVERSIZED_FUNCTION",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "laya_computer/preflight.py",
+          "line_number": 8,
+          "step_id": null,
+          "message": "Função 'analyze_preflight_plan' tem 71 linhas (limiar recomendado: 50).",
+          "suggestion": "Refatorar a função dividindo-a em funções auxiliares menores."
+        }
+      ]
+    },
+    {
+      "validator_name": "code_quality_tests",
+      "status": "pass",
+      "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
+      "exit_code": 0,
+      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.38s",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "mcp_contract_validator",
+      "status": "pass",
+      "command_or_rule": "mcp_tool_registration",
+      "exit_code": 0,
+      "details": "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s).",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    }
+  ],
+  "dod_pillars": [
+    {
+      "name": "contract_conformance",
+      "passed": true,
+      "evidence": "Tool MCP registrada com schema correto e documentação presente.",
+      "details": [
+        "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s)."
+      ]
+    },
+    {
+      "name": "test_suite_coverage",
+      "passed": true,
+      "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
+      "details": [
+        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.38s"
+      ]
+    },
+    {
+      "name": "sonarqube_quality_gate",
+      "passed": true,
+      "evidence": "Quality Gate SonarQube aprovado: zero falhas críticas ou bloqueantes.",
+      "details": [
+        "Total de apontamentos consultivos/menores: 1."
+      ]
+    },
+    {
+      "name": "repository_hygiene",
+      "passed": true,
+      "evidence": "Repositório limpo sem arquivos temporários espúrios e escopo validado.",
+      "details": [
+        "Nenhum resíduo de build ou arquivo temporário detectado."
+      ]
+    },
+    {
+      "name": "session_memory_recorded",
+      "passed": true,
+      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "details": [
+        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+      ]
+    }
+  ],
+  "llm_calls": []
+}

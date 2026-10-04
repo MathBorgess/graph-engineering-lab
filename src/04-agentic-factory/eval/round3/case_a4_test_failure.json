@@ -1,0 +1,126 @@
+{
+  "case_id": "case_a4_test_failure",
+  "round": "Round_3_Independent_Oracles",
+  "description": "Falha de teste unitário comprovada por mutação real",
+  "pre_registration": {
+    "hypothesis": "Pytest falha em test_minimum_valid e é barrado por code_quality_tests.",
+    "expected_route": "veto em code_quality_tests",
+    "failure_criterion": "code_quality_tests retorna pass"
+  },
+  "mutation": {
+    "verified": true,
+    "diff_hash": "2a8ee7c838fced0f00b812dbd09e4359e7b727950bf07bf64be524a00b67f8cd",
+    "diff_snippet": "diff --git a/laya-computer/laya_computer/preflight.py b/laya-computer/laya_computer/preflight.py\nindex 0167f36..77f2eb7 100644\n--- a/laya-computer/laya_computer/preflight.py\n+++ b/laya-computer/laya_computer/preflight.py\n@@ -30,7 +30,7 @@ def analyze_preflight_plan(plan_data: dict) -> dict:\n                 result[\"issues\"].append({\"code\": \"PLAN_SCHEMA_INVALID\", \"severity\": \"error\", \"message\": \"Invalid plan schema\"})\n             return result\n \n-        result[\"status\"] = \"valid\"\n+        resul"
+  },
+  "is_valid": false,
+  "ready_for_human_acceptance": false,
+  "vetoed": true,
+  "veto_validator": "code_quality_tests",
+  "validation_results": [
+    {
+      "validator_name": "scope_validator",
+      "status": "pass",
+      "command_or_rule": "scope_whitelist_check",
+      "exit_code": 0,
+      "details": "Todos os 1 arquivos modificados estão dentro do escopo permitido.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "static_code_analysis",
+      "status": "pass",
+      "command_or_rule": "sonarqube_ast_rules",
+      "exit_code": 0,
+      "details": "SonarQube Static Analysis concluída: 1 apontamento(s) encontrado(s). Blockers/Critical: 0 | Major/Minor: 1.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "OVERSIZED_FUNCTION",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "laya_computer/preflight.py",
+          "line_number": 8,
+          "step_id": null,
+          "message": "Função 'analyze_preflight_plan' tem 64 linhas (limiar recomendado: 50).",
+          "suggestion": "Refatorar a função dividindo-a em funções auxiliares menores."
+        }
+      ]
+    },
+    {
+      "validator_name": "code_quality_tests",
+      "status": "fail",
+      "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
+      "exit_code": 1,
+      "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert analyze_preflight_plan(plan())[\"status\"] == \"valid\"\nE       AssertionError: assert 'invalid_status' == 'valid'\nE         \nE         - valid\nE         + invalid_status\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 1.38s\n",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "PYTEST_FAILURE",
+          "category": "bug",
+          "severity": "blocker",
+          "file_path": null,
+          "line_number": null,
+          "step_id": null,
+          "message": "Um ou mais testes automatizados falharam no worktree.",
+          "suggestion": "Revisar as mensagens de falha e corrigir a implementação no código."
+        }
+      ]
+    },
+    {
+      "validator_name": "mcp_contract_validator",
+      "status": "pass",
+      "command_or_rule": "mcp_tool_registration",
+      "exit_code": 0,
+      "details": "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s).",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    }
+  ],
+  "dod_pillars": [
+    {
+      "name": "contract_conformance",
+      "passed": true,
+      "evidence": "Tool MCP registrada com schema correto e documentação presente.",
+      "details": [
+        "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s)."
+      ]
+    },
+    {
+      "name": "test_suite_coverage",
+      "passed": false,
+      "evidence": "Falha nos testes automatizados.",
+      "details": [
+        "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_vali"
+      ]
+    },
+    {
+      "name": "sonarqube_quality_gate",
+      "passed": true,
+      "evidence": "Quality Gate SonarQube aprovado: zero falhas críticas ou bloqueantes.",
+      "details": [
+        "Total de apontamentos consultivos/menores: 1."
+      ]
+    },
+    {
+      "name": "repository_hygiene",
+      "passed": true,
+      "evidence": "Repositório limpo sem arquivos temporários espúrios e escopo validado.",
+      "details": [
+        "Nenhum resíduo de build ou arquivo temporário detectado."
+      ]
+    },
+    {
+      "name": "session_memory_recorded",
+      "passed": true,
+      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "details": [
+        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+      ]
+    }
+  ],
+  "llm_calls": []
+}
