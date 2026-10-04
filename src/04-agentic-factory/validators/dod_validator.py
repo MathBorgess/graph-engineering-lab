@@ -1,7 +1,7 @@
 """Validador central da Definition of Done (DoD) com consolidação de scorecard em 5 pilares."""
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 try:
     from ..contracts.dod import DoDPillar, DoDReport
     from ..contracts.findings import ValidationResult
@@ -15,6 +15,7 @@ def evaluate_definition_of_done(
     validation_results: List[ValidationResult],
     worktree_path: Path,
     raw_memories_file: Optional[Path] = None,
+    human_decisions: Optional[List[Dict[str, Any]]] = None,
 ) -> DoDReport:
     """Audita os 5 pilares fundamentais da DoD antes de autorizar o aceite humano.
     
@@ -120,6 +121,11 @@ def evaluate_definition_of_done(
 
     scope_res = res_map.get("scope_validator")
     has_unapproved_drift = scope_res.requires_interrupt if scope_res else False
+    if has_unapproved_drift and human_decisions:
+        for dec in human_decisions:
+            if dec.get("gate") == "scope_drift_review" and dec.get("choice") in ("approve_and_continue", "accept"):
+                has_unapproved_drift = False
+                break
 
     if not junk_files and not has_unapproved_drift:
         pillars.append(
@@ -145,23 +151,43 @@ def evaluate_definition_of_done(
             )
         )
 
-    # 5. Pilar de Memória e WAL
+    # 5. Pilar de Memória e WAL (Superação da Lei de Goodhart: exige dados JSON válidos)
+    wal_valid = False
+    wal_details = []
     if raw_memories_file and raw_memories_file.exists() and raw_memories_file.stat().st_size > 0:
+        import json
+        lines = [l.strip() for l in raw_memories_file.read_text(encoding="utf-8").splitlines() if l.strip()]
+        valid_records = 0
+        for l in lines:
+            try:
+                json.loads(l)
+                valid_records += 1
+            except Exception:
+                pass
+        if valid_records > 0:
+            wal_valid = True
+            wal_details.append(f"Arquivo {raw_memories_file.name} populado com {valid_records} registro(s) JSON válidos.")
+        else:
+            wal_details.append(f"Arquivo {raw_memories_file.name} contém dados mas nenhum registro JSON válido.")
+    else:
+        wal_details.append("Arquivo WAL de memórias ausente ou com 0 bytes.")
+
+    if wal_valid:
         pillars.append(
             DoDPillar(
                 name="session_memory_recorded",
                 passed=True,
                 evidence="Descobertas da sessão registradas no WAL raw_memories.jsonl.",
-                details=[f"Arquivo {raw_memories_file.name} populado com sucesso."],
+                details=wal_details,
             )
         )
     else:
         pillars.append(
             DoDPillar(
                 name="session_memory_recorded",
-                passed=True,  # Informativo/pass se não houve descobertas novas obrigatórias
-                evidence="Nenhuma anotação necessária ou arquivo WAL vazio.",
-                details=["Registro de memória verificado."],
+                passed=False,
+                evidence="Falha no registro de memória: WAL vazio, ausente ou sem registros válidos.",
+                details=wal_details,
             )
         )
 
