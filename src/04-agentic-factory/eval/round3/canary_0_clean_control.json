@@ -42,7 +42,7 @@
       "status": "pass",
       "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
       "exit_code": 0,
-      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.21s",
+      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.48s",
       "artifact_path": null,
       "requires_interrupt": false,
       "issues": []
@@ -72,7 +72,7 @@
       "passed": true,
       "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
       "details": [
-        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.21s"
+        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.48s"
       ]
     },
     {

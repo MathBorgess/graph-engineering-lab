@@ -43,7 +43,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.21s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.48s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -73,7 +73,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.21s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.48s"
         ]
       },
       {
@@ -168,7 +168,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.35s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 0.96s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -198,7 +198,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.35s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 0.96s"
         ]
       },
       {
@@ -343,7 +343,7 @@
         "status": "fail",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 1,
-        "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert False, \"canary test failure\"\nE       AssertionError: canary test failure\nE       assert False\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 1.08s\n",
+        "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert False, \"canary test failure\"\nE       AssertionError: canary test failure\nE       assert False\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 0.96s\n",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": [
@@ -469,7 +469,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.33s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 0.97s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -499,7 +499,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.33s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 0.97s"
         ]
       },
       {
@@ -604,7 +604,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.26s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.34s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -645,7 +645,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.26s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.34s"
         ]
       },
       {
@@ -730,7 +730,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.04s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.11s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -760,7 +760,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.04s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.11s"
         ]
       },
       {

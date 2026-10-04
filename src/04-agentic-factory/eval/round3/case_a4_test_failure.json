@@ -53,7 +53,7 @@
       "status": "fail",
       "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
       "exit_code": 1,
-      "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert analyze_preflight_plan(plan())[\"status\"] == \"valid\"\nE       AssertionError: assert 'invalid_status' == 'valid'\nE         \nE         - valid\nE         + invalid_status\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 1.38s\n",
+      "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert analyze_preflight_plan(plan())[\"status\"] == \"valid\"\nE       AssertionError: assert 'invalid_status' == 'valid'\nE         \nE         - valid\nE         + invalid_status\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 1.09s\n",
       "artifact_path": null,
       "requires_interrupt": false,
       "issues": [
@@ -116,9 +116,9 @@
     {
       "name": "session_memory_recorded",
       "passed": true,
-      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
       "details": [
-        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+        "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
       ]
     }
   ],

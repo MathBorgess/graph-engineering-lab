@@ -113,7 +113,7 @@
       "status": "fail",
       "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
       "exit_code": 1,
-      "details": "Testes foram ignorados ou desativados com skip na suíte:\n.....................................s.................                  [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_preflight.py:12: bypass test\n54 passed, 1 skipped in 1.57s",
+      "details": "Testes foram ignorados ou desativados com skip na suíte:\n.....................................s.................                  [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_preflight.py:12: bypass test\n54 passed, 1 skipped in 4.84s",
       "artifact_path": null,
       "requires_interrupt": false,
       "issues": [
@@ -154,7 +154,7 @@
       "passed": false,
       "evidence": "Falha nos testes automatizados.",
       "details": [
-        "Testes foram ignorados ou desativados com skip na suíte:\n.....................................s.................                  [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_preflight.py:12: bypass test\n54 passed, 1 skipped in 1.57s"
+        "Testes foram ignorados ou desativados com skip na suíte:\n.....................................s.................                  [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_preflight.py:12: bypass test\n54 passed, 1 skipped in 4.84s"
       ]
     },
     {
@@ -176,9 +176,9 @@
     {
       "name": "session_memory_recorded",
       "passed": true,
-      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
       "details": [
-        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+        "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
       ]
     }
   ],

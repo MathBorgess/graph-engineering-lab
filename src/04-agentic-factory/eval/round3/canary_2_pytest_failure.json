@@ -113,7 +113,7 @@
       "status": "fail",
       "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
       "exit_code": 1,
-      "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert False, \"canary test failure\"\nE       AssertionError: canary test failure\nE       assert False\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 1.08s\n",
+      "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert False, \"canary test failure\"\nE       AssertionError: canary test failure\nE       assert False\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 0.96s\n",
       "artifact_path": null,
       "requires_interrupt": false,
       "issues": [

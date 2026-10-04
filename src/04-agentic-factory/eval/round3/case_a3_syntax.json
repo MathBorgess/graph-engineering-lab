@@ -116,9 +116,9 @@
     {
       "name": "session_memory_recorded",
       "passed": true,
-      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
       "details": [
-        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+        "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
       ]
     }
   ],
