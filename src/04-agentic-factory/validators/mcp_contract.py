@@ -80,7 +80,7 @@ def validate_mcp_tool_contract(
             Issue(
                 code="EMPTY_TOOL_DOCSTRING",
                 category="code_smell",
-                severity="major",
+                severity="blocker",
                 message=f"A ferramenta MCP '{expected_tool_name}' não possui docstring / descrição de propósito.",
                 suggestion="Adicionar docstring concisa explicando a análise estática sem efeitos de desktop.",
             )
