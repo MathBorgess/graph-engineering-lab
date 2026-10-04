@@ -1,0 +1,273 @@
+{
+  "round": "Round_3_Memory_F9",
+  "ground_truth": {
+    "concepts": [
+      {
+        "concept_id": "preflight-reachability-linear",
+        "claim": "A análise de alcançabilidade no preflight percorre uma cadeia linear seguindo estritamente next_step a partir do passo inicial (first_step_id, assumido como steps[0].id); referências em on_failure são ignoradas na travessia normal de pré-voo.",
+        "expected_evidence": "laya_computer/preflight.py:37",
+        "supersedes": null
+      },
+      {
+        "concept_id": "destructive-keys-lexical",
+        "claim": "O risco de teclas/atalhos destrutivos é detectado de forma puramente léxica e estática: os atalhos são normalizados (casing) e comparados contra uma lista de combinações perigosas, e comandos contendo 'command' ou 'terminal' são sinalizados, sem executar nada no SO e sem efeitos colaterais.",
+        "expected_evidence": "laya_computer/preflight.py:53",
+        "supersedes": null
+      },
+      {
+        "concept_id": "preflight-reachability-v2",
+        "claim": "O ponto de partida da alcançabilidade é configurável: quando plan.start_step é fornecido, a travessia começa nele; só na ausência dele recorre-se a steps[0].id. Isso substitui a premissa anterior de que o início é sempre steps[0].",
+        "expected_evidence": "laya_computer/plan.py:126",
+        "supersedes": "preflight-reachability-linear"
+      }
+    ]
+  },
+  "summary": {
+    "arm_a_prompt_only": {
+      "avg_lines_recorded": 3.0,
+      "total_duplicates": 2,
+      "total_evasions": 0,
+      "captured_gt_total": "7/9",
+      "tool_rejections": 0
+    },
+    "arm_b_tool_dedup": {
+      "avg_lines_recorded": 3.0,
+      "total_duplicates": 0,
+      "total_evasions": 0,
+      "captured_gt_total": "9/9",
+      "tool_rejections": 0
+    },
+    "distillation_demonstration": {
+      "arm_a_active_memories": [
+        "preflight-reachability-linear",
+        "destructive-keys-lexical"
+      ],
+      "arm_b_active_memories": [
+        "destructive-keys-lexical",
+        "preflight-reachability-v2"
+      ],
+      "arm_b_distilled_concepts": 3
+    },
+    "hypothesis_confirmed": true
+  },
+  "runs_arm_a": [
+    {
+      "arm": "arm_a",
+      "sequence_index": 1,
+      "wal_file": "/Users/matheusborges/github/graph-engineering-lab/src/04-agentic-factory/eval/round3/wal_arm_a_seq1.jsonl",
+      "total_lines_recorded": 3,
+      "unique_concepts": 2,
+      "semantic_duplicates": 1,
+      "evasions": 0,
+      "captured_ground_truth": 2,
+      "missed_ground_truth": 1,
+      "tool_rejections": 0,
+      "tokens_spent": 835,
+      "tool_calls_log": [
+        {
+          "task": "task_1_reachability",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:37",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_a_seq1.jsonl'."
+        },
+        {
+          "task": "task_2_destructive_keys",
+          "concept_id": "destructive-keys-lexical",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:53",
+          "tool_result": "Sucesso: Descoberta 'destructive-keys-lexical' registrada no WAL em 'wal_arm_a_seq1.jsonl'."
+        },
+        {
+          "task": "task_3_start_step_supersedes",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/plan.py:126",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_a_seq1.jsonl'."
+        }
+      ]
+    },
+    {
+      "arm": "arm_a",
+      "sequence_index": 2,
+      "wal_file": "/Users/matheusborges/github/graph-engineering-lab/src/04-agentic-factory/eval/round3/wal_arm_a_seq2.jsonl",
+      "total_lines_recorded": 3,
+      "unique_concepts": 3,
+      "semantic_duplicates": 0,
+      "evasions": 0,
+      "captured_ground_truth": 3,
+      "missed_ground_truth": 0,
+      "tool_rejections": 0,
+      "tokens_spent": 814,
+      "tool_calls_log": [
+        {
+          "task": "task_1_reachability",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:37",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_a_seq2.jsonl'."
+        },
+        {
+          "task": "task_2_destructive_keys",
+          "concept_id": "destructive-keys-lexical",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:53",
+          "tool_result": "Sucesso: Descoberta 'destructive-keys-lexical' registrada no WAL em 'wal_arm_a_seq2.jsonl'."
+        },
+        {
+          "task": "task_3_start_step_supersedes",
+          "concept_id": "preflight-reachability-v2",
+          "supersedes": "preflight-reachability-linear",
+          "evidence": "laya_computer/plan.py:126",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-v2' registrada no WAL em 'wal_arm_a_seq2.jsonl'."
+        }
+      ]
+    },
+    {
+      "arm": "arm_a",
+      "sequence_index": 3,
+      "wal_file": "/Users/matheusborges/github/graph-engineering-lab/src/04-agentic-factory/eval/round3/wal_arm_a_seq3.jsonl",
+      "total_lines_recorded": 3,
+      "unique_concepts": 2,
+      "semantic_duplicates": 1,
+      "evasions": 0,
+      "captured_ground_truth": 2,
+      "missed_ground_truth": 1,
+      "tool_rejections": 0,
+      "tokens_spent": 842,
+      "tool_calls_log": [
+        {
+          "task": "task_1_reachability",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:37",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_a_seq3.jsonl'."
+        },
+        {
+          "task": "task_2_destructive_keys",
+          "concept_id": "destructive-keys-lexical",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:53",
+          "tool_result": "Sucesso: Descoberta 'destructive-keys-lexical' registrada no WAL em 'wal_arm_a_seq3.jsonl'."
+        },
+        {
+          "task": "task_3_start_step_supersedes",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/plan.py:126",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_a_seq3.jsonl'."
+        }
+      ]
+    }
+  ],
+  "runs_arm_b": [
+    {
+      "arm": "arm_b",
+      "sequence_index": 1,
+      "wal_file": "/Users/matheusborges/github/graph-engineering-lab/src/04-agentic-factory/eval/round3/wal_arm_b_seq1.jsonl",
+      "total_lines_recorded": 3,
+      "unique_concepts": 3,
+      "semantic_duplicates": 0,
+      "evasions": 0,
+      "captured_ground_truth": 3,
+      "missed_ground_truth": 0,
+      "tool_rejections": 0,
+      "tokens_spent": 875,
+      "tool_calls_log": [
+        {
+          "task": "task_1_reachability",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:37",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_b_seq1.jsonl'."
+        },
+        {
+          "task": "task_2_destructive_keys",
+          "concept_id": "destructive-keys-lexical",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:53",
+          "tool_result": "Sucesso: Descoberta 'destructive-keys-lexical' registrada no WAL em 'wal_arm_b_seq1.jsonl'."
+        },
+        {
+          "task": "task_3_start_step_supersedes",
+          "concept_id": "preflight-reachability-v2",
+          "supersedes": "preflight-reachability-linear",
+          "evidence": "laya_computer/plan.py:126",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-v2' registrada no WAL em 'wal_arm_b_seq1.jsonl'."
+        }
+      ]
+    },
+    {
+      "arm": "arm_b",
+      "sequence_index": 2,
+      "wal_file": "/Users/matheusborges/github/graph-engineering-lab/src/04-agentic-factory/eval/round3/wal_arm_b_seq2.jsonl",
+      "total_lines_recorded": 3,
+      "unique_concepts": 3,
+      "semantic_duplicates": 0,
+      "evasions": 0,
+      "captured_ground_truth": 3,
+      "missed_ground_truth": 0,
+      "tool_rejections": 0,
+      "tokens_spent": 884,
+      "tool_calls_log": [
+        {
+          "task": "task_1_reachability",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:37",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_b_seq2.jsonl'."
+        },
+        {
+          "task": "task_2_destructive_keys",
+          "concept_id": "destructive-keys-lexical",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:53",
+          "tool_result": "Sucesso: Descoberta 'destructive-keys-lexical' registrada no WAL em 'wal_arm_b_seq2.jsonl'."
+        },
+        {
+          "task": "task_3_start_step_supersedes",
+          "concept_id": "preflight-reachability-v2",
+          "supersedes": "preflight-reachability-linear",
+          "evidence": "laya_computer/plan.py:126",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-v2' registrada no WAL em 'wal_arm_b_seq2.jsonl'."
+        }
+      ]
+    },
+    {
+      "arm": "arm_b",
+      "sequence_index": 3,
+      "wal_file": "/Users/matheusborges/github/graph-engineering-lab/src/04-agentic-factory/eval/round3/wal_arm_b_seq3.jsonl",
+      "total_lines_recorded": 3,
+      "unique_concepts": 3,
+      "semantic_duplicates": 0,
+      "evasions": 0,
+      "captured_ground_truth": 3,
+      "missed_ground_truth": 0,
+      "tool_rejections": 0,
+      "tokens_spent": 876,
+      "tool_calls_log": [
+        {
+          "task": "task_1_reachability",
+          "concept_id": "preflight-reachability-linear",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:37",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-linear' registrada no WAL em 'wal_arm_b_seq3.jsonl'."
+        },
+        {
+          "task": "task_2_destructive_keys",
+          "concept_id": "destructive-keys-lexical",
+          "supersedes": null,
+          "evidence": "laya_computer/preflight.py:53",
+          "tool_result": "Sucesso: Descoberta 'destructive-keys-lexical' registrada no WAL em 'wal_arm_b_seq3.jsonl'."
+        },
+        {
+          "task": "task_3_start_step_supersedes",
+          "concept_id": "preflight-reachability-v2",
+          "supersedes": "preflight-reachability-linear",
+          "evidence": "laya_computer/plan.py:126",
+          "tool_result": "Sucesso: Descoberta 'preflight-reachability-v2' registrada no WAL em 'wal_arm_b_seq3.jsonl'."
+        }
+      ]
+    }
+  ]
+}

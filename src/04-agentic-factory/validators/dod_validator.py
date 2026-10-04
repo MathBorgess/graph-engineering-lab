@@ -151,24 +151,77 @@ def evaluate_definition_of_done(
             )
         )
 
-    # 5. Pilar de Memória e WAL (Superação da Lei de Goodhart: exige dados JSON válidos)
+    # 5. Pilar de Memória e WAL (§4.3: Evidência resolvida e zero duplicatas ativas)
     wal_valid = False
     wal_details = []
     if raw_memories_file and raw_memories_file.exists() and raw_memories_file.stat().st_size > 0:
         import json
         lines = [l.strip() for l in raw_memories_file.read_text(encoding="utf-8").splitlines() if l.strip()]
-        valid_records = 0
+        records = []
         for l in lines:
             try:
-                json.loads(l)
-                valid_records += 1
+                records.append(json.loads(l))
             except Exception:
                 pass
-        if valid_records > 0:
-            wal_valid = True
-            wal_details.append(f"Arquivo {raw_memories_file.name} populado com {valid_records} registro(s) JSON válidos.")
-        else:
+
+        if not records:
             wal_details.append(f"Arquivo {raw_memories_file.name} contém dados mas nenhum registro JSON válido.")
+        else:
+            active_concepts = {}
+            has_duplicates = False
+            evidence_failures = []
+            has_valid_no_new_concepts = False
+
+            for r in records:
+                cid = r.get("concept_id") or r.get("concept")
+                claim = r.get("claim") or r.get("raw_note") or r.get("context") or ""
+                ev = r.get("evidence") or ""
+                status = r.get("status", "active")
+                supersedes = r.get("supersedes")
+
+                if cid == "no_new_concepts" and len(claim) >= 15:
+                    has_valid_no_new_concepts = True
+                    continue
+
+                if status == "active" and cid:
+                    if cid in active_concepts and not supersedes:
+                        has_duplicates = True
+                        wal_details.append(f"Duplicata ativa não permitida sem supersedes: '{cid}'.")
+                    else:
+                        active_concepts[cid] = claim
+
+                # Valida resolução de evidência
+                if ev:
+                    if ":" in ev and "::" not in ev:
+                        parts = ev.split(":")
+                        f_rel = parts[0].strip()
+                        l_str = parts[1].strip()
+                        target_f = base / f_rel
+                        if not target_f.exists() and f_rel.startswith(f"{base.name}/"):
+                            target_f = base / f_rel[len(base.name) + 1:]
+                        if not target_f.exists():
+                            evidence_failures.append(f"Arquivo '{f_rel}' não existe.")
+                        else:
+                            try:
+                                l_num = int(l_str)
+                                tot = len(target_f.read_text(encoding="utf-8").splitlines())
+                                if l_num < 1 or l_num > tot:
+                                    evidence_failures.append(f"Linha {l_num} fora dos limites em '{f_rel}' (total: {tot}).")
+                            except ValueError:
+                                evidence_failures.append(f"Linha inválida '{l_str}' em '{f_rel}'.")
+                    elif "::" in ev:
+                        test_f_str = ev.split("::")[0].strip()
+                        if not (base / test_f_str).exists():
+                            evidence_failures.append(f"Arquivo de teste '{test_f_str}' não existe.")
+
+            if has_duplicates:
+                wal_valid = False
+            elif evidence_failures:
+                wal_valid = False
+                wal_details.extend(evidence_failures)
+            elif records or has_valid_no_new_concepts:
+                wal_valid = True
+                wal_details.append(f"WAL validado: {len(active_concepts)} conceito(s) único(s) com evidências resolvidas.")
     else:
         wal_details.append("Arquivo WAL de memórias ausente ou com 0 bytes.")
 
@@ -177,7 +230,7 @@ def evaluate_definition_of_done(
             DoDPillar(
                 name="session_memory_recorded",
                 passed=True,
-                evidence="Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+                evidence="Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
                 details=wal_details,
             )
         )
@@ -186,7 +239,7 @@ def evaluate_definition_of_done(
             DoDPillar(
                 name="session_memory_recorded",
                 passed=False,
-                evidence="Falha no registro de memória: WAL vazio, ausente ou sem registros válidos.",
+                evidence="Pilar de memória reprovado (duplicata, evidência não resolvida ou WAL vazio).",
                 details=wal_details,
             )
         )
