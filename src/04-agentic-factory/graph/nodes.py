@@ -59,6 +59,8 @@ def validator_node(state: Dict[str, Any], allowed_scope_patterns: List[str]) -> 
                     rel_path = line[3:].strip().lstrip("/")
                     if " -> " in rel_path:
                         rel_path = rel_path.split(" -> ")[-1].strip()
+                    if rel_path.startswith(f"{worktree.name}/"):
+                        rel_path = rel_path[len(worktree.name) + 1:]
                     if rel_path and rel_path not in affected_files:
                         affected_files.append(rel_path)
     except Exception:
@@ -155,6 +157,7 @@ def dod_node(state: Dict[str, Any]) -> dict:
         validation_results=state.get("validation_results", []),
         worktree_path=worktree,
         raw_memories_file=raw_memories,
+        human_decisions=state.get("human_decisions", []),
     )
 
     return {
@@ -166,6 +169,9 @@ def dod_node(state: Dict[str, Any]) -> dict:
 
 def memory_distillation_node(state: Dict[str, Any]) -> dict:
     """Destila o WAL de memórias brutas salvando cartões permanentes para o projeto."""
+    import json
+    import re
+
     raw_path_str = state.get("raw_memories_path")
     if not raw_path_str:
         return {"active_memories_used": []}
@@ -174,7 +180,60 @@ def memory_distillation_node(state: Dict[str, Any]) -> dict:
     if not raw_file.exists():
         return {"active_memories_used": []}
 
-    # Aqui a destilação consolida as linhas do .jsonl gerando o índice
+    cards_dir = raw_file.parent / "store"
+    cards_dir.mkdir(parents=True, exist_ok=True)
+
+    distilled: Dict[str, Dict[str, Any]] = {}
+    superseded_ids = set()
+
+    for line in raw_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            record = json.loads(line)
+        except Exception:
+            continue
+
+        raw_note = record.get("raw_note") or record.get("content") or ""
+        concept_id = record.get("concept_id")
+        if not concept_id:
+            words = re.findall(r"[a-zA-Z0-9]+", raw_note.lower())[:4]
+            concept_id = "-".join(words) if words else "general-heuristic"
+
+        supersedes = record.get("supersedes")
+        if supersedes:
+            superseded_ids.add(supersedes)
+
+        status = record.get("status", "active")
+        distilled[concept_id] = {
+            "concept_id": concept_id,
+            "session_id": record.get("session_id", "session"),
+            "timestamp": record.get("timestamp", ""),
+            "content": raw_note,
+            "status": "superseded" if concept_id in superseded_ids else status,
+        }
+
+    for sid in superseded_ids:
+        if sid in distilled:
+            distilled[sid]["status"] = "superseded"
+
+    active_concepts = []
+    for cid, card in distilled.items():
+        if card["status"] == "active":
+            active_concepts.append(cid)
+            card_path = cards_dir / f"{cid}.md"
+            card_content = (
+                f"# Concept Card: {cid}\n\n"
+                f"- **Session:** {card['session_id']}\n"
+                f"- **Updated:** {card['timestamp']}\n"
+                f"- **Status:** {card['status']}\n\n"
+                f"## Knowledge\n{card['content']}\n"
+            )
+            card_path.write_text(card_content, encoding="utf-8")
+
     return {
-        "active_memories_used": ["mcp-preflight-heuristics"],
+        "active_memories_used": active_concepts,
+        "distilled_concepts_count": len(distilled),
+        "active_concepts_count": len(active_concepts),
     }
