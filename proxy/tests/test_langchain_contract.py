@@ -23,7 +23,7 @@ def sse(*events):
     return httpx.Response(200, headers={"content-type": "text/event-stream"}, content="".join(f"event: {e['type']}\ndata: {json.dumps(e)}\n\n" for e in events))
 
 def completed(output):
-    return {"id":"resp_1", "object":"response", "created_at":1, "status":"completed", "model":"gpt-6-sol", "output":output, "usage":{"input_tokens":3,"output_tokens":2,"total_tokens":5}}
+    return {"id":"resp_1", "object":"response", "created_at":1, "status":"completed", "model":"gpt-6.1-sol", "output":output, "usage":{"input_tokens":3,"output_tokens":2,"total_tokens":5}}
 
 def message(content):
     return {"id":"msg_1","type":"message","role":"assistant","model":"claude-sonnet-4-6","content":content,"stop_reason":"tool_use" if content[0]['type']=='tool_use' else 'end_turn',"stop_sequence":None,"usage":{"input_tokens":3,"output_tokens":2}}
@@ -45,7 +45,7 @@ class NativeContracts(unittest.TestCase):
             return lib.Response(response.status_code,content=response.content,headers=dict(response.headers))
         client = stack.enter_context(lib.Client(transport=lib.MockTransport(forward)))
         if provider == 'codex':
-            return create_model(provider,'gpt-6-sol',base_url='http://proxy.test/v1',http_client=client,max_retries=0)
+            return create_model(provider,'gpt-6.1-sol',base_url='http://proxy.test/v1',http_client=client,max_retries=0)
         stack.enter_context(patch('langchain_anthropic.chat_models._get_default_httpx_client',return_value=client))
         return create_model(provider,'claude-sonnet-4-6',base_url='http://proxy.test',max_retries=0)
 

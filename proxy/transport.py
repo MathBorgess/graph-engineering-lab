@@ -16,11 +16,14 @@ async def forward(url, body, headers, client_factory, *, collect_response=False)
         raise
     if response.status_code >= 400:
         status = response.status_code
+        err_bytes = await response.aread()
+        err_msg = err_bytes.decode("utf-8", errors="replace")
         await response.aclose()
         await client.aclose()
-        raise HTTPException(status, "Upstream request failed; check model and native API parameters.")
+        raise HTTPException(status, f"Upstream request failed ({status}): {err_msg}")
 
     if collect_response:
+        items = []
         try:
             async for line in response.aiter_lines():
                 if not line.startswith("data: "):
@@ -29,8 +32,13 @@ async def forward(url, body, headers, client_factory, *, collect_response=False)
                 if data == "[DONE]":
                     break
                 event = json.loads(data)
+                if event.get("type") == "response.output_item.done" and "item" in event:
+                    items.append(event["item"])
                 if event.get("type") == "response.completed":
-                    return JSONResponse(event["response"])
+                    resp_dict = event["response"]
+                    if not resp_dict.get("output") and items:
+                        resp_dict["output"] = items
+                    return JSONResponse(resp_dict)
                 if event.get("type") in {"error", "response.failed", "response.incomplete"}:
                     raise HTTPException(502, "Upstream response failed or was incomplete.")
             raise HTTPException(502, "Upstream stream ended without response.completed.")
