@@ -205,6 +205,10 @@ def validate_codebase_static(
     if target_files:
         for f in target_files:
             p = (base / f).resolve()
+            if not p.exists() and f.startswith(f"{base.name}/"):
+                p = (base / f[len(base.name) + 1:]).resolve()
+            if not p.exists() and (base.parent / f).exists():
+                p = (base.parent / f).resolve()
             if p.exists() and p.suffix == ".py":
                 files_to_check.append(p)
     else:
