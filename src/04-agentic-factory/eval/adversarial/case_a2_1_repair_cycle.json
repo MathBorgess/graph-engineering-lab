@@ -1,0 +1,10 @@
+{
+  "case_id": "case_a2_1_repair_cycle",
+  "description": "Reparo autônomo de defeito injetado em preflight.py",
+  "elapsed_seconds": 80.23,
+  "worker_attempts": 2,
+  "final_status": "in_progress",
+  "tests_passed_at_finish": true,
+  "pytest_output": ".......................................................                  [100%]\n55 passed in 1.49s\n",
+  "repaired_successfully": false
+}

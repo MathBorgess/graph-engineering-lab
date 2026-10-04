@@ -637,7 +637,7 @@ def run_goal(app, goal: str, initial_ontology: Optional[Dict[str, Any]] = None):
 def main():
     parser = argparse.ArgumentParser(description="DeepAgents LangGraph Multi-Agent Workflow")
     parser.add_argument("--endpoint", default="http://127.0.0.1:8000/v1", help="Subscription Proxy URL")
-    parser.add_argument("--model", default="codex", choices=["codex", "claude", "gpt-6-sol", "claude-haiku-4-5-20251001"])
+    parser.add_argument("--model", default="codex", choices=["codex", "claude", "gpt-6.1-sol", "claude-haiku-4-5-20251001"])
     parser.add_argument("--query", type=str, default=None, help="Single query to run")
     parser.add_argument("--test", action="store_true", help="Run multi-step study benchmark")
     parser.add_argument("--mermaid", action="store_true", help="Print Mermaid flowchart diagram")

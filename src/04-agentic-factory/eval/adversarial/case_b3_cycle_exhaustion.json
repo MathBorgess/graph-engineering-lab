@@ -1,0 +1,7 @@
+{
+  "case_id": "case_b3_cycle_exhaustion",
+  "judge_attempts_input": 1,
+  "judge_ready_for_dod": true,
+  "summary": "Judge esgotou o orçamento de 1 ciclo. Itens residuais convertidos em notas consultivas.",
+  "trava_anti_rabbit_hole_ativada": true
+}

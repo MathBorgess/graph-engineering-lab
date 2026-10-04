@@ -1,0 +1,3 @@
+{"timestamp": "2026-10-04T17:31:42.492172", "concept_id": "preflight-reachability-linear", "claim": "Heuristic discovered for task_1_reachability", "evidence": "laya_computer/preflight.py:37", "supersedes": null, "status": "active"}
+{"timestamp": "2026-10-04T17:31:56.751505", "concept_id": "destructive-keys-lexical", "claim": "Heuristic discovered for task_2_destructive_keys", "evidence": "laya_computer/preflight.py:53", "supersedes": null, "status": "active"}
+{"timestamp": "2026-10-04T17:32:03.021436", "concept_id": "preflight-reachability-linear", "claim": "Heuristic discovered for task_3_start_step_supersedes", "evidence": "laya_computer/plan.py:126", "supersedes": null, "status": "active"}

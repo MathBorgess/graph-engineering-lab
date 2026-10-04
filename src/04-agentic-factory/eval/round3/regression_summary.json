@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-10-04 17:52:13",
+  "clean_control_passed": true,
+  "planted_canaries": "5/5",
+  "battery_a": "9/10",
+  "battery_i": "7/7",
+  "judge_o7_blockers": "3/3",
+  "consolidated_veto_rate": "19/20",
+  "consolidated_veto_pct": 95.0,
+  "elapsed_seconds": 32.34
+}

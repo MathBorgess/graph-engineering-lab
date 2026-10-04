@@ -116,7 +116,7 @@ Os testes offline verificam o ciclo de tools com clientes LangChain reais e upst
 ```python
 from proxy.client import create_model
 
-model = create_model("codex", "gpt-6-sol")  # confirmar disponibilidade no probe
+model = create_model("codex", "gpt-6.1-sol")  # confirmar disponibilidade no probe
 # Alternativa: create_model("claude", "claude-sonnet-4-6")
 ```
 

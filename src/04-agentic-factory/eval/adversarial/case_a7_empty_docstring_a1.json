@@ -1,0 +1,91 @@
+{
+  "case_id": "case_a7_empty_docstring",
+  "mode": "A1_pipeline_only",
+  "description": "Tool MCP sem docstring",
+  "is_valid": true,
+  "ready_for_human_acceptance": true,
+  "validation_results": [
+    {
+      "validator_name": "scope_validator",
+      "status": "pass",
+      "exit_code": 0,
+      "details": "Todos os 1 arquivos modificados estão dentro do escopo permitido.",
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "static_code_analysis",
+      "status": "pass",
+      "exit_code": 0,
+      "details": "SonarQube Static Analysis concluída: 0 apontamento(s) encontrado(s). Blockers/Critical: 0 | Major/Minor: 0.",
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "code_quality_tests",
+      "status": "pass",
+      "exit_code": 0,
+      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.17s",
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "mcp_contract_validator",
+      "status": "pass",
+      "exit_code": 0,
+      "details": "Tool MCP 'preflight_plan' validada. 1 issue(s) apontada(s).",
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "EMPTY_TOOL_DOCSTRING",
+          "category": "code_smell",
+          "severity": "major",
+          "message": "A ferramenta MCP 'preflight_plan' não possui docstring / descrição de propósito.",
+          "suggestion": "Adicionar docstring concisa explicando a análise estática sem efeitos de desktop."
+        }
+      ]
+    }
+  ],
+  "dod_pillars": [
+    {
+      "name": "contract_conformance",
+      "passed": true,
+      "evidence": "Tool MCP registrada com schema correto e documentação presente.",
+      "details": [
+        "Tool MCP 'preflight_plan' validada. 1 issue(s) apontada(s)."
+      ]
+    },
+    {
+      "name": "test_suite_coverage",
+      "passed": true,
+      "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
+      "details": [
+        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.17s"
+      ]
+    },
+    {
+      "name": "sonarqube_quality_gate",
+      "passed": true,
+      "evidence": "Quality Gate SonarQube aprovado: zero falhas críticas ou bloqueantes.",
+      "details": [
+        "Total de apontamentos consultivos/menores: 0."
+      ]
+    },
+    {
+      "name": "repository_hygiene",
+      "passed": true,
+      "evidence": "Repositório limpo sem arquivos temporários espúrios e escopo validado.",
+      "details": [
+        "Nenhum resíduo de build ou arquivo temporário detectado."
+      ]
+    },
+    {
+      "name": "session_memory_recorded",
+      "passed": true,
+      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "details": [
+        "Arquivo raw_memories.jsonl populado com sucesso."
+      ]
+    }
+  ]
+}

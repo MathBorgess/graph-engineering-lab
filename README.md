@@ -22,7 +22,7 @@ python -m unittest discover -s proxy/tests -v
 ```python
 from proxy.client import create_model
 
-codex = create_model("codex", "gpt-6-sol")
+codex = create_model("codex", "gpt-6.1-sol")
 claude = create_model("claude", "claude-sonnet-4-6")
 # Both expose native LangChain bind_tools(), invoke() and stream().
 ```

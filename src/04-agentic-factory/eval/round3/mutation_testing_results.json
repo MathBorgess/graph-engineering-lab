@@ -1,0 +1,140 @@
+{
+  "round": "Round_3_Mutation_O4",
+  "feature": "preflight_plan",
+  "target_file": "laya_computer/preflight.py",
+  "lines_evaluated": "33-65",
+  "baseline": {
+    "total_mutants": 13,
+    "killed_count": 8,
+    "survived_count": 5,
+    "mutation_score": 61.5,
+    "survivors": [
+      {
+        "mutant_id": "MUT_03",
+        "line_number": 43,
+        "description": "Troca 'any' por 'all' na detecção de nós inalcançáveis",
+        "original_code": "if any(s.id not in reachable for s in plan.steps):",
+        "mutated_code": "if all(s.id not in reachable for s in plan.steps):",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_04",
+        "line_number": 44,
+        "description": "Omite invalidação de status quando há nó inalcançável",
+        "original_code": "            result[\"status\"] = \"invalid\"",
+        "mutated_code": "            pass  # omitido",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_05",
+        "line_number": 45,
+        "description": "Omite recomendação 'repair' quando há nó inalcançável",
+        "original_code": "            result[\"recommendation\"] = \"repair\"",
+        "mutated_code": "            pass  # omitido",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_06",
+        "line_number": 49,
+        "description": "Inverte checagem de action set_value (== vira !=)",
+        "original_code": "            if step.action.value == \"set_value\":",
+        "mutated_code": "            if step.action.value != \"set_value\":",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_13",
+        "line_number": 64,
+        "description": "Altera recomendação de plano limpo de 'proceed_to_inspection' para 'repair'",
+        "original_code": "            result[\"recommendation\"] = \"proceed_to_inspection\"",
+        "mutated_code": "            result[\"recommendation\"] = \"repair\"",
+        "status": "survived",
+        "failing_test": ""
+      }
+    ]
+  },
+  "proposed_threshold": {
+    "threshold_percent": 85.0,
+    "justification": "O código de avaliação estática (preflight) atua como barreira primária contra execuções destrutivas no SO. Um escore de mutação inferior a 85% permite mutantes em regras booleanas de risco (como troca de OR por AND em teclas destrutivas) passarem indetectados. Propõe-se o limiar mínimo de 85.0% nas linhas alteradas.",
+    "baseline_met_threshold": false
+  },
+  "worker_feedback_cycle": {
+    "model": "gpt-6-luna",
+    "route": "codex_proxy_8000",
+    "tokens": {
+      "prompt_tokens": 610,
+      "completion_tokens": 283,
+      "total_tokens": 893
+    },
+    "latency_ms": 19876.8,
+    "new_tests_added_count": 3,
+    "reinforcement_file": "tests/test_preflight_mutants.py"
+  },
+  "post_feedback": {
+    "total_mutants": 13,
+    "killed_count": 8,
+    "survived_count": 5,
+    "mutation_score": 61.5,
+    "score_delta": 0.0,
+    "threshold_achieved": false,
+    "survivors": [
+      {
+        "mutant_id": "MUT_03",
+        "line_number": 43,
+        "description": "Troca 'any' por 'all' na detecção de nós inalcançáveis",
+        "original_code": "if any(s.id not in reachable for s in plan.steps):",
+        "mutated_code": "if all(s.id not in reachable for s in plan.steps):",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_04",
+        "line_number": 44,
+        "description": "Omite invalidação de status quando há nó inalcançável",
+        "original_code": "            result[\"status\"] = \"invalid\"",
+        "mutated_code": "            pass  # omitido",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_05",
+        "line_number": 45,
+        "description": "Omite recomendação 'repair' quando há nó inalcançável",
+        "original_code": "            result[\"recommendation\"] = \"repair\"",
+        "mutated_code": "            pass  # omitido",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_06",
+        "line_number": 49,
+        "description": "Inverte checagem de action set_value (== vira !=)",
+        "original_code": "            if step.action.value == \"set_value\":",
+        "mutated_code": "            if step.action.value != \"set_value\":",
+        "status": "survived",
+        "failing_test": ""
+      },
+      {
+        "mutant_id": "MUT_13",
+        "line_number": 64,
+        "description": "Altera recomendação de plano limpo de 'proceed_to_inspection' para 'repair'",
+        "original_code": "            result[\"recommendation\"] = \"proceed_to_inspection\"",
+        "mutated_code": "            result[\"recommendation\"] = \"repair\"",
+        "status": "survived",
+        "failing_test": ""
+      }
+    ]
+  },
+  "spec_oracle_comparison": {
+    "oracle_source": "Claude Sonnet 5.5 Spec Acceptance Suite",
+    "total_mutants": 13,
+    "killed_count": 13,
+    "survived_count": 0,
+    "mutation_score": 100.0,
+    "gap_closed": true,
+    "finding": "O oráculo independente de aceitação gerado pelo Sonnet 5.5 eliminou 100% dos mutantes que sobreviveram na suíte do worker."
+  }
+}

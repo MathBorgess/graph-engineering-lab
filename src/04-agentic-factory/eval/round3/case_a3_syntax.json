@@ -1,0 +1,126 @@
+{
+  "case_id": "case_a3_syntax",
+  "round": "Round_3_Independent_Oracles",
+  "description": "Erro de sintaxe em preflight.py",
+  "pre_registration": {
+    "hypothesis": "Sintaxe inválida impede compilação do AST e execução dos testes.",
+    "expected_route": "veto em static_code_analysis e code_quality_tests",
+    "failure_criterion": "is_valid=True"
+  },
+  "mutation": {
+    "verified": true,
+    "diff_hash": "64ce9248e248ba5917be4aa400fe3522246d727bb8888fd8eecdd4f7f6a8cf85",
+    "diff_snippet": "diff --git a/laya-computer/laya_computer/preflight.py b/laya-computer/laya_computer/preflight.py\nindex 0167f36..60386af 100644\n--- a/laya-computer/laya_computer/preflight.py\n+++ b/laya-computer/laya_computer/preflight.py\n@@ -6,6 +6,8 @@ from .plan import Plan\n \n \n def analyze_preflight_plan(plan_data: dict) -> dict:\n+    def broken_syntax(:\n+        pass\n     result = {\n         \"schema_version\": 1,\n         \"status\": \"invalid\",\n"
+  },
+  "is_valid": false,
+  "ready_for_human_acceptance": false,
+  "vetoed": true,
+  "veto_validator": "static_code_analysis",
+  "validation_results": [
+    {
+      "validator_name": "scope_validator",
+      "status": "pass",
+      "command_or_rule": "scope_whitelist_check",
+      "exit_code": 0,
+      "details": "Todos os 1 arquivos modificados estão dentro do escopo permitido.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "static_code_analysis",
+      "status": "fail",
+      "command_or_rule": "sonarqube_ast_rules",
+      "exit_code": 1,
+      "details": "SonarQube Static Analysis concluída: 1 apontamento(s) encontrado(s). Blockers/Critical: 1 | Major/Minor: 0.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "SYNTAX_ERROR",
+          "category": "bug",
+          "severity": "blocker",
+          "file_path": "laya_computer/preflight.py",
+          "line_number": 9,
+          "step_id": null,
+          "message": "Erro de sintaxe no código Python: invalid syntax",
+          "suggestion": "Corrigir a sintaxe antes de submeter aos testes."
+        }
+      ]
+    },
+    {
+      "validator_name": "code_quality_tests",
+      "status": "fail",
+      "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
+      "exit_code": 2,
+      "details": "Falha nos testes (exit code 2):\n==================================== ERRORS ====================================\n___________________ ERROR collecting tests/test_preflight.py ___________________\n.venv/lib/python3.12/site-packages/_pytest/python.py:498: in importtestmodule\n    mod = import_path(\n.venv/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path\n    importlib.import_module(module_name)\n/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1387: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked\n \n",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "PYTEST_FAILURE",
+          "category": "bug",
+          "severity": "blocker",
+          "file_path": null,
+          "line_number": null,
+          "step_id": null,
+          "message": "Um ou mais testes automatizados falharam no worktree.",
+          "suggestion": "Revisar as mensagens de falha e corrigir a implementação no código."
+        }
+      ]
+    },
+    {
+      "validator_name": "mcp_contract_validator",
+      "status": "pass",
+      "command_or_rule": "mcp_tool_registration",
+      "exit_code": 0,
+      "details": "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s).",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    }
+  ],
+  "dod_pillars": [
+    {
+      "name": "contract_conformance",
+      "passed": true,
+      "evidence": "Tool MCP registrada com schema correto e documentação presente.",
+      "details": [
+        "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s)."
+      ]
+    },
+    {
+      "name": "test_suite_coverage",
+      "passed": false,
+      "evidence": "Falha nos testes automatizados.",
+      "details": [
+        "Falha nos testes (exit code 2):\n==================================== ERRORS ====================================\n___________________ ERROR collecting tests/test_preflight.py ___________________\n.venv/lib/python3.12/site-packages/_pytest/python.py:498: in importtestmodule\n    mod = import_path(\n.venv"
+      ]
+    },
+    {
+      "name": "sonarqube_quality_gate",
+      "passed": false,
+      "evidence": "Reprovado no Quality Gate: 1 falha(s) crítica(s) ou vulnerabilidade(s).",
+      "details": [
+        "SYNTAX_ERROR (laya_computer/preflight.py:9): Erro de sintaxe no código Python: invalid syntax"
+      ]
+    },
+    {
+      "name": "repository_hygiene",
+      "passed": true,
+      "evidence": "Repositório limpo sem arquivos temporários espúrios e escopo validado.",
+      "details": [
+        "Nenhum resíduo de build ou arquivo temporário detectado."
+      ]
+    },
+    {
+      "name": "session_memory_recorded",
+      "passed": true,
+      "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
+      "details": [
+        "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
+      ]
+    }
+  ],
+  "llm_calls": []
+}

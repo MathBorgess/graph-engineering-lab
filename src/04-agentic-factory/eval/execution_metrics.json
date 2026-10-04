@@ -1,0 +1,25 @@
+{
+  "1_veto_rate": "0.0 (falhas bloqueadas antes do humano)",
+  "2_anti_rabbit_hole": "100.0% (ciclos do judge <= 1)",
+  "3_hitl_signal_ratio": "100.0% de paradas em marcos reais",
+  "4_context_frugality": "Catálogo compacto de skills (<=110 chars) e isolamento dos revisores",
+  "5_anti_stale_memory": "3 memórias registradas no WAL sem inchaço de state",
+  "6_mttr_convergence": "1 tentativa(s) para DoD verde (orçamento: 3)",
+  "raw_metrics": {
+    "start_time": 1791136526.808459,
+    "worker_attempts": 1,
+    "validator_failures_detected": 0,
+    "validator_runs": 4,
+    "judge_blockers": 0,
+    "judge_advisories": 0,
+    "judge_cycles": 0,
+    "hitl_interrupts_total": 1,
+    "hitl_interrupts_justified": 1,
+    "compact_catalog_chars": 0,
+    "raw_memories_count": 3,
+    "final_dod_all_passed": true,
+    "final_status": "completed",
+    "end_time": 1791136622.1656692,
+    "duration_seconds": 95.36
+  }
+}

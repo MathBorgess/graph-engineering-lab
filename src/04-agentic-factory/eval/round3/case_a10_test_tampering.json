@@ -1,0 +1,186 @@
+{
+  "case_id": "case_a10_test_tampering",
+  "round": "Round_3_Independent_Oracles",
+  "description": "Teste desativado com @pytest.mark.skip dentro de função",
+  "pre_registration": {
+    "hypothesis": "code_quality_tests detecta 'skipped' no stdout do pytest e veta com TEST_TAMPERING_DETECTED.",
+    "expected_route": "veto em code_quality_tests",
+    "failure_criterion": "code_quality_tests retorna pass"
+  },
+  "mutation": {
+    "verified": true,
+    "diff_hash": "06bb62d2cace60b0aa31842778417ed6ca0f88b44f1ac06a7a466bbfe5d129fa",
+    "diff_snippet": "diff --git a/laya-computer/tests/test_preflight.py b/laya-computer/tests/test_preflight.py\nindex 2988dac..8d2ace7 100644\n--- a/laya-computer/tests/test_preflight.py\n+++ b/laya-computer/tests/test_preflight.py\n@@ -7,6 +7,9 @@ def plan():\n     ]}\n \n \n+import pytest\n+\n+@pytest.mark.skip(reason=\"bypass test\")\n def test_minimum_valid():\n     assert analyze_preflight_plan(plan())[\"status\"] == \"valid\"\n \n"
+  },
+  "is_valid": false,
+  "ready_for_human_acceptance": false,
+  "vetoed": true,
+  "veto_validator": "code_quality_tests",
+  "validation_results": [
+    {
+      "validator_name": "scope_validator",
+      "status": "pass",
+      "command_or_rule": "scope_whitelist_check",
+      "exit_code": 0,
+      "details": "Todos os 1 arquivos modificados estão dentro do escopo permitido.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "static_code_analysis",
+      "status": "pass",
+      "command_or_rule": "sonarqube_ast_rules",
+      "exit_code": 0,
+      "details": "SonarQube Static Analysis concluída: 7 apontamento(s) encontrado(s). Blockers/Critical: 0 | Major/Minor: 7.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "tests/test_preflight.py",
+          "line_number": 4,
+          "step_id": null,
+          "message": "Função pública 'plan' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        },
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "tests/test_preflight.py",
+          "line_number": 13,
+          "step_id": null,
+          "message": "Função pública 'test_minimum_valid' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        },
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "tests/test_preflight.py",
+          "line_number": 17,
+          "step_id": null,
+          "message": "Função pública 'test_invalid_schema' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        },
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "tests/test_preflight.py",
+          "line_number": 24,
+          "step_id": null,
+          "message": "Função pública 'test_unreachable' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        },
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "tests/test_preflight.py",
+          "line_number": 31,
+          "step_id": null,
+          "message": "Função pública 'test_set_value_and_dangerous_key' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        },
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "tests/test_preflight.py",
+          "line_number": 40,
+          "step_id": null,
+          "message": "Função pública 'test_partial_observation' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        },
+        {
+          "code": "MISSING_RETURN_TYPE",
+          "category": "code_smell",
+          "severity": "minor",
+          "file_path": "tests/test_preflight.py",
+          "line_number": 48,
+          "step_id": null,
+          "message": "Função pública 'test_unexpected_exception' não possui anotação de tipo de retorno.",
+          "suggestion": "Adicionar anotação explícita de tipo de retorno (ex: -> dict ou -> None)."
+        }
+      ]
+    },
+    {
+      "validator_name": "code_quality_tests",
+      "status": "fail",
+      "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
+      "exit_code": 1,
+      "details": "Testes foram ignorados ou desativados com skip na suíte:\n.....................................s.................                  [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_preflight.py:12: bypass test\n54 passed, 1 skipped in 4.84s",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": [
+        {
+          "code": "TEST_TAMPERING_DETECTED",
+          "category": "security_hotspot",
+          "severity": "blocker",
+          "file_path": null,
+          "line_number": null,
+          "step_id": null,
+          "message": "Testes foram desativados com @pytest.mark.skip ou marcação de skip na suíte.",
+          "suggestion": "Remova marcações de skip e garanta que 100% dos testes sejam executados."
+        }
+      ]
+    },
+    {
+      "validator_name": "mcp_contract_validator",
+      "status": "pass",
+      "command_or_rule": "mcp_tool_registration",
+      "exit_code": 0,
+      "details": "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s).",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    }
+  ],
+  "dod_pillars": [
+    {
+      "name": "contract_conformance",
+      "passed": true,
+      "evidence": "Tool MCP registrada com schema correto e documentação presente.",
+      "details": [
+        "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s)."
+      ]
+    },
+    {
+      "name": "test_suite_coverage",
+      "passed": false,
+      "evidence": "Falha nos testes automatizados.",
+      "details": [
+        "Testes foram ignorados ou desativados com skip na suíte:\n.....................................s.................                  [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_preflight.py:12: bypass test\n54 passed, 1 skipped in 4.84s"
+      ]
+    },
+    {
+      "name": "sonarqube_quality_gate",
+      "passed": true,
+      "evidence": "Quality Gate SonarQube aprovado: zero falhas críticas ou bloqueantes.",
+      "details": [
+        "Total de apontamentos consultivos/menores: 7."
+      ]
+    },
+    {
+      "name": "repository_hygiene",
+      "passed": true,
+      "evidence": "Repositório limpo sem arquivos temporários espúrios e escopo validado.",
+      "details": [
+        "Nenhum resíduo de build ou arquivo temporário detectado."
+      ]
+    },
+    {
+      "name": "session_memory_recorded",
+      "passed": true,
+      "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
+      "details": [
+        "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
+      ]
+    }
+  ],
+  "llm_calls": []
+}

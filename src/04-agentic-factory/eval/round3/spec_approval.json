@@ -1,0 +1,22 @@
+{
+  "gate": "spec_approval",
+  "status": "approved",
+  "human_decision": "Aprova\u00e7\u00e3o formal da especifica\u00e7\u00e3o, testes de aceita\u00e7\u00e3o e refer\u00eancia pelo dono",
+  "timestamp": "2026-10-04T20:24:50.152079+00:00",
+  "model_spec_agent": "claude-sonnet-5-5",
+  "frozen_hashes": {
+    "reference_implementation.py": "2bcb0860e51fded61e5ae0da37abd597810a87189df7699d01a248c68049ca50",
+    "test_visible_acceptance.py": "e43168ddd906dc7fe7ab98e4ebf894e102fa84611003804474eb0df37e6defa9",
+    "test_hidden_acceptance.py": "da7ba60c124159fcced64d25badf141333e8645d8cd30dfc02c80c9d72456975",
+    "test_hypothesis_properties.py": "d63fbab55f125cd7447c71d2f79de7d08f36db03142a7dfe62c4a564ae19fbc1",
+    "hidden_feedback.json": "d5c8faf6249277c009bfcddccab700bfc8a3295729f561370663f63afe2506b3"
+  },
+  "metrics": {
+    "visible_acceptance_tests": 12,
+    "hidden_acceptance_tests": 15,
+    "hypothesis_properties": 6,
+    "total_tests_generated": 33,
+    "tests_rejected_or_altered_by_owner": 0,
+    "flawed_spec_tests": 0
+  }
+}

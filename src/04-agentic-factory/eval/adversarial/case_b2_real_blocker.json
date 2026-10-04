@@ -1,0 +1,25 @@
+{
+  "case_id": "case_b2_real_blocker",
+  "verdict": "repair_required",
+  "blockers_count": 2,
+  "advisories_count": 0,
+  "blockers": [
+    {
+      "category": "security",
+      "severity": "blocker",
+      "location": "laya_computer/preflight.py:27-30",
+      "problem": "The function opens a config_path taken directly from plan input and returns the file contents as raw_config. A caller can use this to read and disclose files accessible to the process; validation failure does not prevent the read.",
+      "remediation_suggestion": "Remove file access from preflight analysis. If reading a config is required, accept only an explicitly authorized path, enforce an allowed base directory, and do not return raw file contents."
+    },
+    {
+      "category": "performance",
+      "severity": "blocker",
+      "location": "laya_computer/preflight.py:29-30",
+      "problem": "The unbounded synchronous read can consume excessive memory or block indefinitely on a FIFO or other slow/non-terminating source. Because the function is called synchronously, this can also stall the server event loop.",
+      "remediation_suggestion": "Remove the payload-controlled file read. If file input is necessary, restrict it to regular files in an allowed directory, impose a strict size limit, and avoid blocking the event loop."
+    }
+  ],
+  "advisories": [],
+  "summary": "A auditoria encontrou leitura arbitrária de arquivos com retorno do conteúdo ao chamador e uma leitura síncrona sem limite que pode consumir memória ou bloquear o servidor. Remova o acesso a arquivos controlado pelo plano antes de aprovar.",
+  "identified_real_blocker": true
+}

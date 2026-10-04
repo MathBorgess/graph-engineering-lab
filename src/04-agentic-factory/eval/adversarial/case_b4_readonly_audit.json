@@ -1,0 +1,7 @@
+{
+  "case_id": "case_b4_readonly_audit",
+  "main_agent_tools": [],
+  "subagents_tools": {},
+  "has_write_tool": false,
+  "is_strictly_readonly": true
+}

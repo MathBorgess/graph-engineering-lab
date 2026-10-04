@@ -1,0 +1,36 @@
+{
+  "run_id": 1,
+  "timestamp": "2026-10-04 17:49:38",
+  "models": {
+    "spec_agent": "claude-sonnet-5-5",
+    "worker": "gpt-6-luna",
+    "judges": "claude-sonnet-5-5"
+  },
+  "gates": {
+    "canaries_gate": "PASS",
+    "suite_integrity_o5": "PASS",
+    "ast_static_analysis": "PASS",
+    "scope_validator": "PASS",
+    "spec_acceptance_visible": "PASS",
+    "spec_acceptance_hidden": "PASS",
+    "spec_properties_hypothesis": "PASS",
+    "judge_o7": "PASS"
+  },
+  "metrics": {
+    "execution_time_seconds": 31.79,
+    "all_hard_gates_passed": true,
+    "mutation_score_pct": 100.0,
+    "coverage_pct": 94.0,
+    "memory_quality": "VERIFIED_NO_DUPLICATES",
+    "repair_attempts": 0
+  },
+  "tokens_by_model": {
+    "claude-sonnet-5-5": 690,
+    "gpt-6-luna": 544
+  },
+  "hitl_stops": 1,
+  "repair_attempts": 0,
+  "diff_applied": "diff --git a/laya-computer/laya_computer/plan.py b/laya-computer/laya_computer/plan.py\nindex 6b709f3..519f288 100644\n--- a/laya-computer/laya_computer/plan.py\n+++ b/laya-computer/laya_computer/plan.py\n@@ -137,3 +137,41 @@ class Plan(BaseModel):\n     @property\n     def first_step_id(self) -> str:\n         return self.start_step or self.steps[0].id\n+\n+\n+# code to append to laya_computer/plan.py\n+def get_terminal_steps(plan: Plan) -> list[str]:\n+    steps_map = (\n+        plan.steps\n+        if isi",
+  "diff_hash": "2031929c3abb664a9ac38c533ca9ab43f77b0712ec3277f830b5d583f47909ea",
+  "final_verdict": "ACCEPTED"
+}

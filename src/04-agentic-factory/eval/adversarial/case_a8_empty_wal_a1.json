@@ -1,0 +1,8 @@
+{
+  "case_id": "case_a8_empty_wal",
+  "passed": true,
+  "evidence": "Nenhuma anotação necessária ou arquivo WAL vazio.",
+  "details": [
+    "Registro de memória verificado."
+  ]
+}

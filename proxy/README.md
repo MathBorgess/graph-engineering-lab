@@ -35,7 +35,7 @@ def add(a: int, b: int) -> int:
     """Soma dois inteiros."""
     return a + b
 
-model = create_model("codex", "gpt-6-sol")
+model = create_model("codex", "gpt-6.1-sol")
 # Ou: create_model("claude", "claude-sonnet-4-6")
 llm = model.bind_tools([add])
 messages = [{"role": "user", "content": "Some 2 e 3 usando add."}]
