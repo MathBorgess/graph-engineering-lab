@@ -1,0 +1,41 @@
+{
+  "case_id": "case_a9_post_spec_oracles",
+  "description": "Re-avaliação do Caso A-9 com os Oráculos Independentes da Spec",
+  "pre_registration": {
+    "hypothesis": "A mutação A-9 (on_failure reachability) deve ser VETADA pelos oráculos independentes da spec.",
+    "expected_route": "Falha na aceitação visível, na oculta e divergência na referência diferencial.",
+    "failure_criterion": "Todos os novos oráculos aprovam a mutação A-9."
+  },
+  "mutation": {
+    "diff_hash": "edf9bbd46d9597d517a24e0c731b30607fba5c88b90e166e5726582c7c7168ee",
+    "diff_snippet": "diff --git a/laya-computer/laya_computer/preflight.py b/laya-computer/laya_computer/preflight.py\nindex 0167f36..2f9400b 100644\n--- a/laya-computer/laya_computer/preflight.py\n+++ b/laya-computer/laya_computer/preflight.py\n@@ -33,10 +33,17 @@ def analyze_preflight_plan(plan_data: dict) -> dict:\n         result[\"status\"] = \"valid\"\n         reachable = set()\n         by_id = {step.id: step for step in plan.steps}\n-        current = plan.first_step_id\n-        while current is not None and current no"
+  },
+  "baseline_worker_suite": {
+    "passed": true,
+    "note": "Suíte antiga era cega para essa mutação (55/55 passed)"
+  },
+  "independent_oracles": {
+    "visible_acceptance_oracle": {
+      "caught": true,
+      "exit_code": 1,
+      "failing_test": "test_step_only_reachable_via_on_failure_is_unreachable",
+      "output_snippet": "....F..F......                                                           [100%]\n=================================== FAILURES ===================================\n____________ test_step_only_reachable_via_on_failure_is_unreachable ____________\n\n    def test_step_only_reachable_via_on_failure_is_unreachable():\n        r = analyze_preflight_plan(plan(step(\"a\", on_failure=\"rescue\"), step(\"rescue\")))\n> "
+    },
+    "hidden_acceptance_oracle": {
+      "caught": true,
+      "exit_code": 1,
+      "failing_test": "test_on_failure_does_not_extend_reachability_from_reachable_step",
+      "output_snippet": "F....F...FF...............F...                                           [100%]\n=================================== FAILURES ===================================\n_______ test_on_failure_does_not_extend_reachability_from_reachable_step _______\n\n    def test_on_failure_does_not_extend_reachability_from_reachable_step():\n        r = analyze_preflight_plan(\n            plan(step(\"a\", next_step=\"b\", on_"
+    },
+    "differential_reference_oracle": {
+      "divergence_detected": true,
+      "worker_status": "valid",
+      "reference_status": "invalid",
+      "worker_unreachable_count": 0,
+      "reference_unreachable_count": 1
+    }
+  },
+  "gap_closed": true,
+  "vetoed": true,
+  "veto_oracle": "visible_acceptance + hidden_acceptance + differential_reference"
+}

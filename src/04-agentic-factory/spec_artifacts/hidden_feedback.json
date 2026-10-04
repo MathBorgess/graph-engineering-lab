@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "feedback_policy": "Hints describe the violated rule without revealing test inputs.",
+  "tests": {
+    "test_on_failure_does_not_extend_reachability_from_reachable_step": {
+      "category": "reachability",
+      "hint": "Traversal must follow next_step only. A step reached solely through on_failure of any step, reachable or not, is unreachable."
+    },
+    "test_on_failure_to_already_reachable_step_is_fine": {
+      "category": "reachability",
+      "hint": "on_failure edges must neither add nor remove reachability. Do not flag steps that are already reachable via next_step."
+    },
+    "test_self_loop_terminates": {
+      "category": "termination",
+      "hint": "Track visited step ids so a next_step self-reference terminates."
+    },
+    "test_cycle_leaves_other_steps_unreachable": {
+      "category": "reachability",
+      "hint": "Stop at the first revisited step, and still flag every step outside the traversed chain."
+    },
+    "test_start_step_in_middle_makes_earlier_steps_unreachable": {
+      "category": "reachability",
+      "hint": "Traversal starts at first_step_id (start_step if set); earlier steps in the list get no special treatment."
+    },
+    "test_unreachable_risky_step_still_reports_risk_but_repair_wins": {
+      "category": "precedence",
+      "hint": "Risk rules apply to all steps, but any error-severity issue forces status invalid and recommendation repair."
+    },
+    "test_multiple_risks_sorted_and_deduplicated": {
+      "category": "risk_rules",
+      "hint": "risk_factors is a sorted list without duplicates."
+    },
+    "test_destructive_key_variants": {
+      "category": "risk_rules",
+      "hint": "Key matching is case-insensitive and covers the dangerous shortcuts plus any key containing 'command' or 'terminal'."
+    },
+    "test_benign_keys_not_destructive": {
+      "category": "risk_rules",
+      "hint": "Ordinary keys must not produce destructive_keys."
+    },
+    "test_invalid_inputs_never_raise_and_demand_repair": {
+      "category": "schema",
+      "hint": "Schema or reference failures and non-dict input must return a well-formed invalid/repair result with error issues, never raise."
+    },
+    "test_issue_shape_and_severity_values": {
+      "category": "contract",
+      "hint": "Every issue needs a non-empty code and a severity of 'error' or 'review'."
+    },
+    "test_review_only_issues_do_not_invalidate": {
+      "category": "precedence",
+      "hint": "Risk issues have severity 'review', and risk alone yields status unverified, not invalid."
+    },
+    "test_input_not_mutated_and_deterministic": {
+      "category": "purity",
+      "hint": "Do not mutate plan_data; identical input must give identical output."
+    },
+    "test_long_chain_of_100_steps": {
+      "category": "scale",
+      "hint": "Maximum-size linear plans must pass without recursion limits."
+    },
+    "test_long_cycle_of_100_steps": {
+      "category": "termination",
+      "hint": "Use iteration or a visited set, not unbounded recursion, for cycles."
+    }
+  }
+}

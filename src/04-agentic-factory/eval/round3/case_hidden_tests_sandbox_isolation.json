@@ -1,0 +1,7 @@
+{
+  "case_id": "case_hidden_tests_sandbox_isolation",
+  "description": "Comprova\u00e7\u00e3o de isolamento: worker n\u00e3o consegue ler diret\u00f3rio de testes ocultos",
+  "relative_attempt_result": "Erro ao ler arquivo: Acesso negado: o caminho '../../../src/04-agentic-factory/hidden_eval/test_hidden_acceptance.py' escapa do sandbox /Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer.",
+  "absolute_attempt_result": "Erro ao ler arquivo: Acesso negado: o caminho '/Users/matheusborges/github/graph-engineering-lab/src/04-agentic-factory/hidden_eval/test_hidden_acceptance.py' escapa do sandbox /Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer.",
+  "confinement_strictly_enforced": true
+}
