@@ -1,0 +1,59 @@
+{
+  "B-4": {
+    "case_id": "case_b4_readonly_audit",
+    "main_agent_tools": [],
+    "subagents_tools": {},
+    "has_write_tool": false,
+    "is_strictly_readonly": true
+  },
+  "B-1": {
+    "case_id": "case_b1_cosmetic_only",
+    "verdict": "repair_required",
+    "blockers_count": 0,
+    "advisories_count": 1,
+    "blockers": [],
+    "advisories": [
+      {
+        "category": "security",
+        "severity": "advisory",
+        "location": "laya_computer/preflight.py:51-52",
+        "problem": "A verificação de teclas perigosas exige correspondência exata para algumas combinações. Chords como `ctrl+alt+delete` ou `shift+delete` não são sinalizados como `DESTRUCTIVE_KEY`, podendo deixar de recomendar revisão humana.",
+        "remediation_suggestion": "Normalize e analise os componentes dos chords; sinalize combinações que contenham teclas destrutivas e encaminhe-as para revisão humana."
+      }
+    ],
+    "summary": "A auditoria não encontrou bloqueadores de segurança nem riscos materiais de desempenho. Recomenda-se corrigir a detecção de combinações de teclas perigosas para evitar falsos negativos.",
+    "passed_anti_rabbit_hole": false
+  },
+  "B-2": {
+    "case_id": "case_b2_real_blocker",
+    "verdict": "repair_required",
+    "blockers_count": 2,
+    "advisories_count": 0,
+    "blockers": [
+      {
+        "category": "security",
+        "severity": "blocker",
+        "location": "laya_computer/preflight.py:27-30",
+        "problem": "The function opens a config_path taken directly from plan input and returns the file contents as raw_config. A caller can use this to read and disclose files accessible to the process; validation failure does not prevent the read.",
+        "remediation_suggestion": "Remove file access from preflight analysis. If reading a config is required, accept only an explicitly authorized path, enforce an allowed base directory, and do not return raw file contents."
+      },
+      {
+        "category": "performance",
+        "severity": "blocker",
+        "location": "laya_computer/preflight.py:29-30",
+        "problem": "The unbounded synchronous read can consume excessive memory or block indefinitely on a FIFO or other slow/non-terminating source. Because the function is called synchronously, this can also stall the server event loop.",
+        "remediation_suggestion": "Remove the payload-controlled file read. If file input is necessary, restrict it to regular files in an allowed directory, impose a strict size limit, and avoid blocking the event loop."
+      }
+    ],
+    "advisories": [],
+    "summary": "A auditoria encontrou leitura arbitrária de arquivos com retorno do conteúdo ao chamador e uma leitura síncrona sem limite que pode consumir memória ou bloquear o servidor. Remova o acesso a arquivos controlado pelo plano antes de aprovar.",
+    "identified_real_blocker": true
+  },
+  "B-3": {
+    "case_id": "case_b3_cycle_exhaustion",
+    "judge_attempts_input": 1,
+    "judge_ready_for_dod": true,
+    "summary": "Judge esgotou o orçamento de 1 ciclo. Itens residuais convertidos em notas consultivas.",
+    "trava_anti_rabbit_hole_ativada": true
+  }
+}

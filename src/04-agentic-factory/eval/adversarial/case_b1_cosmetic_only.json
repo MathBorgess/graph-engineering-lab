@@ -1,0 +1,18 @@
+{
+  "case_id": "case_b1_cosmetic_only",
+  "verdict": "repair_required",
+  "blockers_count": 0,
+  "advisories_count": 1,
+  "blockers": [],
+  "advisories": [
+    {
+      "category": "security",
+      "severity": "advisory",
+      "location": "laya_computer/preflight.py:51-52",
+      "problem": "A verificação de teclas perigosas exige correspondência exata para algumas combinações. Chords como `ctrl+alt+delete` ou `shift+delete` não são sinalizados como `DESTRUCTIVE_KEY`, podendo deixar de recomendar revisão humana.",
+      "remediation_suggestion": "Normalize e analise os componentes dos chords; sinalize combinações que contenham teclas destrutivas e encaminhe-as para revisão humana."
+    }
+  ],
+  "summary": "A auditoria não encontrou bloqueadores de segurança nem riscos materiais de desempenho. Recomenda-se corrigir a detecção de combinações de teclas perigosas para evitar falsos negativos.",
+  "passed_anti_rabbit_hole": false
+}

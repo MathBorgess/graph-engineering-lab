@@ -1,0 +1,30 @@
+{
+  "C-1": {
+    "gate": "scope_drift_review",
+    "action": "approve_and_continue",
+    "observed_route": "judge",
+    "verdict": "fábrica acertou",
+    "evidence": "route_after_scope_gate(action_type='approve_and_continue') retornou 'judge'. Desafio observado: dod_validator precisa checar human_decisions para não re-vetar drift aprovado."
+  },
+  "C-2": {
+    "gate": "scope_drift_review",
+    "action": "revert_and_repair",
+    "observed_route": "worker",
+    "verdict": "fábrica acertou",
+    "evidence": "route_after_scope_gate retornou 'worker' e acionou nó worker para desfazer/reparar alteração fora da whitelist."
+  },
+  "C-3": {
+    "gate": "final_task_acceptance",
+    "action": "request_changes",
+    "observed_route": "worker",
+    "verdict": "fábrica acertou",
+    "evidence": "final_acceptance_gate com choice='request_changes' gravou final_status='in_progress' e route_after_final_gate retornou 'worker' com a nota humana preservada no histórico."
+  },
+  "C-4": {
+    "gate": "final_task_acceptance",
+    "action": "accept_and_complete",
+    "observed_route": "memory_distillation -> END",
+    "verdict": "fábrica acertou",
+    "evidence": "final_acceptance_gate com choice='accept_and_complete' gravou final_status='completed' e route_after_final_gate direcionou para memory_distillation concluindo a esteira."
+  }
+}

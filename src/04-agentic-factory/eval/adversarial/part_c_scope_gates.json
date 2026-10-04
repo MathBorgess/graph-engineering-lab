@@ -1,0 +1,15 @@
+{
+  "gate_triggered": "scope_drift_review",
+  "unexpected_files": [
+    "laya-computer/scripts/",
+    "scripts/unauthorized_patch.py"
+  ],
+  "c1_next_nodes_after_approve": [
+    "scope_gate"
+  ],
+  "c1_correct_transition": false,
+  "c2_next_nodes_after_revert": [
+    "scope_gate"
+  ],
+  "c2_correct_transition": false
+}

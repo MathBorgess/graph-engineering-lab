@@ -1,0 +1,22 @@
+{
+  "diagnostico_5_perguntas": {
+    "1_gatilho_de_escrita": "Disparado por decisão autônoma do modelo via tool record_raw_memory, chamada 1x por corrida devido à instrução fixa no system prompt.",
+    "2_leitura_previa_e_dedupe": "NÃO existe leitura prévia do WAL pelo worker, NÃO existe chave de conceito (slug), NÃO existe deduplicação e NÃO existe semântica de supersedes.",
+    "3_lei_de_goodhart_dod": "O pilar session_memory_recorded em dod_validator.py retorna passed=True SEMPRE (seja o arquivo populado ou vazio). Ele recompensa qualquer gravação cega.",
+    "4_destilacao_wal_cartoes": "O nó memory_distillation_node em graph/nodes.py é um mock/stub hardcoded (retorna ['mcp-preflight-heuristics'] sem ler o arquivo .jsonl nem colapsar duplicatas).",
+    "5_contador_no_state": "O FactoryState não tem raw_memories_count, mas o runner run_experiment_04.py calculava len(lines) do disco e tabulava como métrica agregada."
+  },
+  "metricas_wal_atual": {
+    "total_linhas": 3,
+    "conceitos_unicos_estimados": 2,
+    "duplicatas_semanticas": 2,
+    "taxa_duplicidade": "66.7%",
+    "capacidade_invalidação_stale": "0% (memória contradita fica ativa indefinidamente)"
+  },
+  "proposta_de_correcao": {
+    "1_contrato_wal_estruturado": "Adicionar campos obrigatórios 'concept_id' (slug estável), 'status' ('active' | 'superseded') e 'supersedes' (opcional)",
+    "2_tool_read_wal": "Adicionar tool read_session_memories para o worker consultar o histórico antes de gravar",
+    "3_destilador_real": "Implementar memory_distillation_node real que colapsa entradas pelo concept_id e gera cartões permanentes em memory/store/{concept_id}.md",
+    "4_dod_com_dente": "Pilar session_memory_recorded deve auditar se memórias ativas contradizem o código atual e reprovar se houver memórias stale não superadas."
+  }
+}

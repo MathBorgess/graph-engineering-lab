@@ -1,0 +1,103 @@
+{
+  "case_id": "case_a6_junk_tmp",
+  "round": "Round_2_Post_Fixes",
+  "description": "Arquivo .tmp residual no repositório",
+  "is_valid": true,
+  "ready_for_human_acceptance": false,
+  "validation_results": [
+    {
+      "validator_name": "scope_validator",
+      "status": "pass",
+      "command_or_rule": "scope_whitelist_check",
+      "exit_code": 0,
+      "details": "Atenção: 1 arquivo(s) fora do escopo esperado. Interrupção humana solicitada.",
+      "artifact_path": null,
+      "requires_interrupt": true,
+      "issues": [
+        {
+          "code": "SCOPE_DRIFT",
+          "category": "security_hotspot",
+          "severity": "critical",
+          "file_path": "debug_dump.tmp",
+          "line_number": null,
+          "step_id": null,
+          "message": "Arquivo 'debug_dump.tmp' foi modificado mas está fora da lista autorizada de escopo.",
+          "suggestion": "Validar no gate de revisão se a alteração é intencional ou se deve ser revertida (git checkout)."
+        }
+      ]
+    },
+    {
+      "validator_name": "static_code_analysis",
+      "status": "pass",
+      "command_or_rule": "sonarqube_ast_rules",
+      "exit_code": 0,
+      "details": "SonarQube Static Analysis concluída: 0 apontamento(s) encontrado(s). Blockers/Critical: 0 | Major/Minor: 0.",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "code_quality_tests",
+      "status": "pass",
+      "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
+      "exit_code": 0,
+      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 3.36s",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    },
+    {
+      "validator_name": "mcp_contract_validator",
+      "status": "pass",
+      "command_or_rule": "mcp_tool_registration",
+      "exit_code": 0,
+      "details": "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s).",
+      "artifact_path": null,
+      "requires_interrupt": false,
+      "issues": []
+    }
+  ],
+  "dod_pillars": [
+    {
+      "name": "contract_conformance",
+      "passed": true,
+      "evidence": "Tool MCP registrada com schema correto e documentação presente.",
+      "details": [
+        "Tool MCP 'preflight_plan' validada. 0 issue(s) apontada(s)."
+      ]
+    },
+    {
+      "name": "test_suite_coverage",
+      "passed": true,
+      "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
+      "details": [
+        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 3.36s"
+      ]
+    },
+    {
+      "name": "sonarqube_quality_gate",
+      "passed": true,
+      "evidence": "Quality Gate SonarQube aprovado: zero falhas críticas ou bloqueantes.",
+      "details": [
+        "Total de apontamentos consultivos/menores: 0."
+      ]
+    },
+    {
+      "name": "repository_hygiene",
+      "passed": false,
+      "evidence": "Higiene do repositório reprovada.",
+      "details": [
+        "Arquivos temporários detectados: ['debug_dump.tmp']",
+        "Desvio de escopo pendente de aprovação humana."
+      ]
+    },
+    {
+      "name": "session_memory_recorded",
+      "passed": true,
+      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "details": [
+        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+      ]
+    }
+  ]
+}
