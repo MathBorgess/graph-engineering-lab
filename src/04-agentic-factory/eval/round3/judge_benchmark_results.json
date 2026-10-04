@@ -1,0 +1,270 @@
+{
+  "round": "Round_3_Judge_O7_Benchmark",
+  "benchmark_cases_count": 6,
+  "real_blockers_in_ground_truth": 3,
+  "cosmetic_cases_in_ground_truth": 3,
+  "sonnet_5_5": {
+    "true_positives": 3,
+    "false_positives": 0,
+    "false_negatives": 0,
+    "true_negatives": 3,
+    "precision": 1.0,
+    "recall": 1.0,
+    "proof_confirmed_blockers": 3,
+    "total_tokens": 4599,
+    "prompt_tokens": 2357,
+    "completion_tokens": 2242,
+    "total_latency_ms": 42290.1
+  },
+  "gpt_6_luna": {
+    "true_positives": 3,
+    "false_positives": 0,
+    "false_negatives": 0,
+    "true_negatives": 3,
+    "precision": 1.0,
+    "recall": 1.0,
+    "proof_confirmed_blockers": 3,
+    "total_tokens": 3025,
+    "prompt_tokens": 2327,
+    "completion_tokens": 698,
+    "total_latency_ms": 33107.9
+  },
+  "comparison": {
+    "precision_diff": 0.0,
+    "recall_diff": 0.0,
+    "proof_confirmed_diff": 0,
+    "tokens_diff": 1574
+  },
+  "details_sonnet": [
+    {
+      "case_id": "case_g1_path_traversal",
+      "case_name": "G-1: Path Traversal Vulnerability",
+      "is_real_blocker": true,
+      "raw_blockers_count": 1,
+      "confirmed_blockers_count": 1,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 2,
+      "verdict": "repair_required",
+      "confirmed_blockers": [
+        {
+          "category": "security",
+          "severity": "blocker",
+          "location": "laya_computer/storage_helper.py:5",
+          "problem": "Path traversal (CWE-22). `user_filename` is joined to `base_dir` with no confinement check. A value such as `../../etc/passwd` escapes `base_dir`. An absolute path such as `/etc/passwd` is worse: `os.path.join` discards `base_dir` when a later component is absolute. An attacker who controls the filename can read any file the process can read, such as secrets, credentials or source code. Symlinks inside `base_dir` can also point outside it. The fix is to resolve with `os.path.realpath` and verify the result stays under the resolved base, for example with `os.path.commonpath`, before opening the file.",
+          "reproduction_code": "import os, tempfile\n\ndef read_user_asset(base_dir: str, user_filename: str) -> str:\n    file_path = os.path.join(base_dir, user_filename)\n    with open(file_path, 'r', encoding='utf-8') as f:\n        return f.read()\n\nroot = tempfile.mkdtemp()\nbase = os.path.join(root, 'assets')\nos.makedirs(base)\nwith open(os.path.join(root, 'secret.txt'), 'w') as f:\n    f.write('TOP-SECRET')\n\n# 1) relative traversal\nprint(read_user_asset(base, '../secret.txt'))\n# 2) absolute path overrides base_dir\nprint(read_user_asset(base, os.path.join(root, 'secret.txt')))\n# Both print TOP-SECRET, so files outside base_dir are readable.",
+          "proof_status": "CONFIRMED",
+          "proof_reason": "Returncode 0. stdout: TOP-SECRET\nTOP-SECRET, stderr: "
+        }
+      ],
+      "demoted_advisories": [],
+      "tokens": 993,
+      "latency_ms": 9670.0
+    },
+    {
+      "case_id": "case_g2_command_injection",
+      "case_name": "G-2: Command Injection via shell=True",
+      "is_real_blocker": true,
+      "raw_blockers_count": 1,
+      "confirmed_blockers_count": 1,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 2,
+      "verdict": "repair_required",
+      "confirmed_blockers": [
+        {
+          "category": "security",
+          "severity": "blocker",
+          "location": "laya_computer/cli_helper.py:5",
+          "problem": "OS command injection. `user_arg` is interpolated unescaped into a shell command string that is executed with `shell=True` on line 6. An attacker who controls `user_arg` can use shell metacharacters (`;`, `&&`, `|`, `$()`, backticks, newlines) to run arbitrary commands with the privileges of the Python process. The `echo` call needs no shell at all, so the shell adds risk and no benefit.",
+          "reproduction_code": "import subprocess\n\ndef query_system_info(user_arg: str) -> str:\n    cmd = f'echo query: {user_arg}'\n    res = subprocess.check_output(cmd, shell=True, text=True)\n    return res.strip()\n\n# Attacker-controlled input injects a second command\npayload = 'hello; echo INJECTED_$(id -un); touch /tmp/pwned_by_injection'\nprint(query_system_info(payload))\n# The output contains 'INJECTED_<username>', and /tmp/pwned_by_injection now exists.\nimport os\nassert os.path.exists('/tmp/pwned_by_injection'), 'injection failed'\nprint('VULNERABLE: arbitrary command executed')\nos.remove('/tmp/pwned_by_injection')",
+          "proof_status": "CONFIRMED",
+          "proof_reason": "Returncode 0. stdout: query: hello\nINJECTED_matheusborges\nVULNERABLE: arbitrary command executed, stderr: "
+        }
+      ],
+      "demoted_advisories": [],
+      "tokens": 974,
+      "latency_ms": 9120.4
+    },
+    {
+      "case_id": "case_g3_async_blocking_sleep",
+      "case_name": "G-3: Blocking Synchronous Call in Async Routine",
+      "is_real_blocker": true,
+      "raw_blockers_count": 1,
+      "confirmed_blockers_count": 1,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 1,
+      "verdict": "repair_required",
+      "confirmed_blockers": [
+        {
+          "category": "performance",
+          "severity": "blocker",
+          "location": "laya_computer/async_worker.py:6",
+          "problem": "time.sleep(2.0) is a blocking call inside an async coroutine. It freezes the whole event loop thread for 2 seconds on every call. All other coroutines stall during that time, including other requests, timers, and health checks. Concurrent calls run one after another instead of overlapping, so throughput collapses and the service can be denied by a few concurrent requests. Use `await asyncio.sleep(...)`. If the delay stands in for blocking work, use `await asyncio.to_thread(...)` or `loop.run_in_executor`.",
+          "reproduction_code": "import asyncio\nimport time\n\nasync def handle_request_batch(items: list) -> list:\n    time.sleep(2.0)\n    return [i * 2 for i in items]\n\nasync def heartbeat(ticks):\n    start = time.perf_counter()\n    for _ in range(4):\n        await asyncio.sleep(0.1)\n        ticks.append(time.perf_counter() - start)\n\nasync def main():\n    ticks = []\n    hb = asyncio.create_task(heartbeat(ticks))\n    await asyncio.sleep(0)  # let the heartbeat start\n    t0 = time.perf_counter()\n    # 3 concurrent requests should take ~2s if non-blocking; blocking makes it ~6s\n    await asyncio.gather(*(handle_request_batch([1, 2, 3]) for _ in range(3)))\n    total = time.perf_counter() - t0\n    await hb\n    print(f\"3 concurrent requests took {total:.2f}s (expected ~2s if non-blocking)\")\n    print(f\"first heartbeat tick at {ticks[0]:.2f}s (expected ~0.1s); loop was frozen\")\n    assert total >= 5.9, 'requests were serialized by the blocked loop'\n    assert ticks[0] >= 5.9, 'heartbeat starved while the loop was blocked'\n\nasyncio.run(main())",
+          "proof_status": "CONFIRMED",
+          "proof_reason": "Returncode 0. stdout: 3 concurrent requests took 6.02s (expected ~2s if non-blocking)\nfirst heartbeat tick at 6.02s (expected ~0.1s); loop was, stderr: "
+        }
+      ],
+      "demoted_advisories": [],
+      "tokens": 1005,
+      "latency_ms": 9867.5
+    },
+    {
+      "case_id": "case_g4_cosmetic_naming",
+      "case_name": "G-4: Generic Variable Name & Short Docstring",
+      "is_real_blocker": false,
+      "raw_blockers_count": 0,
+      "confirmed_blockers_count": 0,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 2,
+      "verdict": "approved",
+      "confirmed_blockers": [],
+      "demoted_advisories": [],
+      "tokens": 616,
+      "latency_ms": 5807.6
+    },
+    {
+      "case_id": "case_g5_cosmetic_loop_style",
+      "case_name": "G-5: For Loop instead of List Comprehension",
+      "is_real_blocker": false,
+      "raw_blockers_count": 0,
+      "confirmed_blockers_count": 0,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 1,
+      "verdict": "approved",
+      "confirmed_blockers": [],
+      "demoted_advisories": [],
+      "tokens": 527,
+      "latency_ms": 4245.7
+    },
+    {
+      "case_id": "case_g6_cosmetic_unused_import",
+      "case_name": "G-6: Unused Import and TODO Comment",
+      "is_real_blocker": false,
+      "raw_blockers_count": 0,
+      "confirmed_blockers_count": 0,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 1,
+      "verdict": "approved",
+      "confirmed_blockers": [],
+      "demoted_advisories": [],
+      "tokens": 484,
+      "latency_ms": 3578.9
+    }
+  ],
+  "details_gpt6": [
+    {
+      "case_id": "case_g1_path_traversal",
+      "case_name": "G-1: Path Traversal Vulnerability",
+      "is_real_blocker": true,
+      "raw_blockers_count": 1,
+      "confirmed_blockers_count": 1,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 0,
+      "verdict": "repair_required",
+      "confirmed_blockers": [
+        {
+          "category": "security",
+          "severity": "blocker",
+          "location": "laya_computer/storage_helper.py:5",
+          "problem": "The user-controlled filename is joined to base_dir without checking that the resolved path remains inside the permitted directory. A filename containing ../ can escape base_dir and read files accessible to the process.",
+          "reproduction_code": "import os\nimport tempfile\n\nwith tempfile.TemporaryDirectory() as root:\n    base_dir = os.path.join(root, \"assets\")\n    os.mkdir(base_dir)\n    secret_path = os.path.join(root, \"secret.txt\")\n    with open(secret_path, \"w\", encoding=\"utf-8\") as f:\n        f.write(\"sensitive data\")\n\n    user_filename = \"../secret.txt\"\n    file_path = os.path.join(base_dir, user_filename)\n    with open(file_path, \"r\", encoding=\"utf-8\") as f:\n        print(f.read())  # Prints sensitive data outside base_dir",
+          "proof_status": "CONFIRMED",
+          "proof_reason": "Returncode 0. stdout: sensitive data, stderr: "
+        }
+      ],
+      "demoted_advisories": [],
+      "tokens": 657,
+      "latency_ms": 8308.4
+    },
+    {
+      "case_id": "case_g2_command_injection",
+      "case_name": "G-2: Command Injection via shell=True",
+      "is_real_blocker": true,
+      "raw_blockers_count": 1,
+      "confirmed_blockers_count": 1,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 0,
+      "verdict": "repair_required",
+      "confirmed_blockers": [
+        {
+          "category": "security",
+          "severity": "blocker",
+          "location": "laya_computer/cli_helper.py:6",
+          "problem": "The user-controlled value is interpolated into a shell command and executed with shell=True. Shell metacharacters in user_arg can execute arbitrary commands with the application's privileges.",
+          "reproduction_code": "import subprocess\n\nuser_arg = \"x; printf INJECTED\"\ncmd = f\"echo query: {user_arg}\"\nprint(subprocess.check_output(cmd, shell=True, text=True).strip())\n# Prints: query: x\\nINJECTED",
+          "proof_status": "CONFIRMED",
+          "proof_reason": "Returncode 0. stdout: query: x\nINJECTED, stderr: "
+        }
+      ],
+      "demoted_advisories": [],
+      "tokens": 561,
+      "latency_ms": 8233.7
+    },
+    {
+      "case_id": "case_g3_async_blocking_sleep",
+      "case_name": "G-3: Blocking Synchronous Call in Async Routine",
+      "is_real_blocker": true,
+      "raw_blockers_count": 1,
+      "confirmed_blockers_count": 1,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 0,
+      "verdict": "repair_required",
+      "confirmed_blockers": [
+        {
+          "category": "performance",
+          "severity": "blocker",
+          "location": "laya_computer/async_worker.py:7",
+          "problem": "time.sleep(2.0) blocks the event-loop thread for two seconds, preventing other asynchronous tasks on that loop from running during the sleep.",
+          "reproduction_code": "import asyncio\nimport time\n\nasync def handle_request_batch(items):\n    time.sleep(2.0)\n    return [i * 2 for i in items]\n\nasync def main():\n    started = time.monotonic()\n    task = asyncio.create_task(handle_request_batch([1]))\n    await asyncio.sleep(0.1)\n    elapsed = time.monotonic() - started\n    print(f\"Heartbeat delayed for {elapsed:.1f}s\")\n    await task\n\nasyncio.run(main())",
+          "proof_status": "CONFIRMED",
+          "proof_reason": "Returncode 0. stdout: Heartbeat delayed for 2.0s, stderr: "
+        }
+      ],
+      "demoted_advisories": [],
+      "tokens": 613,
+      "latency_ms": 9106.5
+    },
+    {
+      "case_id": "case_g4_cosmetic_naming",
+      "case_name": "G-4: Generic Variable Name & Short Docstring",
+      "is_real_blocker": false,
+      "raw_blockers_count": 0,
+      "confirmed_blockers_count": 0,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 0,
+      "verdict": "approved",
+      "confirmed_blockers": [],
+      "demoted_advisories": [],
+      "tokens": 406,
+      "latency_ms": 2759.4
+    },
+    {
+      "case_id": "case_g5_cosmetic_loop_style",
+      "case_name": "G-5: For Loop instead of List Comprehension",
+      "is_real_blocker": false,
+      "raw_blockers_count": 0,
+      "confirmed_blockers_count": 0,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 0,
+      "verdict": "approved",
+      "confirmed_blockers": [],
+      "demoted_advisories": [],
+      "tokens": 393,
+      "latency_ms": 2312.0
+    },
+    {
+      "case_id": "case_g6_cosmetic_unused_import",
+      "case_name": "G-6: Unused Import and TODO Comment",
+      "is_real_blocker": false,
+      "raw_blockers_count": 0,
+      "confirmed_blockers_count": 0,
+      "demoted_to_advisory_count": 0,
+      "advisories_count": 0,
+      "verdict": "approved",
+      "confirmed_blockers": [],
+      "demoted_advisories": [],
+      "tokens": 395,
+      "latency_ms": 2387.9
+    }
+  ]
+}

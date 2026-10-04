@@ -58,10 +58,11 @@ def invoke_sonnet(prompt: str, system: Optional[str] = None) -> LLMCallRecord:
     # Passa prompt via stdin ou argumento
     try:
         proc = subprocess.run(
-            [CLAUDE_BIN, "--safe-mode", "--model", "sonnet", "-p", full_prompt],
+            [CLAUDE_BIN, "--safe-mode", "--model", "sonnet", "-p", "-"],
+            input=full_prompt,
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=180,
             check=False,
         )
     except subprocess.TimeoutExpired:
