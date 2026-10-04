@@ -86,6 +86,26 @@ def run_code_tests(
     stderr = proc.stderr.strip()
 
     if proc.returncode == 0:
+        # Checagem Anti-Cheat / Tampering: se houver teste pulado ou desativado, veta a aprovação
+        if "skipped" in stdout.lower() or "skipping" in stdout.lower():
+            return ValidationResult(
+                validator_name="code_quality_tests",
+                status="fail",
+                command_or_rule=" ".join(cmd),
+                exit_code=1,
+                details=f"Testes foram ignorados ou desativados com skip na suíte:\n{stdout[:400]}",
+                requires_interrupt=False,
+                issues=[
+                    Issue(
+                        code="TEST_TAMPERING_DETECTED",
+                        category="security_hotspot",
+                        severity="blocker",
+                        message="Testes foram desativados com @pytest.mark.skip ou marcação de skip na suíte.",
+                        suggestion="Remova marcações de skip e garanta que 100% dos testes sejam executados.",
+                    )
+                ],
+            )
+
         return ValidationResult(
             validator_name="code_quality_tests",
             status="pass",
