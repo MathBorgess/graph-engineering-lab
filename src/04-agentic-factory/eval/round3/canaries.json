@@ -43,7 +43,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.69s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.21s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -73,7 +73,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.69s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.21s"
         ]
       },
       {
@@ -95,9 +95,9 @@
       {
         "name": "session_memory_recorded",
         "passed": true,
-        "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+        "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
         "details": [
-          "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+          "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
         ]
       }
     ],
@@ -168,7 +168,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.58s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.35s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -198,7 +198,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.58s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.35s"
         ]
       },
       {
@@ -220,9 +220,9 @@
       {
         "name": "session_memory_recorded",
         "passed": true,
-        "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+        "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
         "details": [
-          "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+          "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
         ]
       }
     ],
@@ -343,7 +343,7 @@
         "status": "fail",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 1,
-        "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert False, \"canary test failure\"\nE       AssertionError: canary test failure\nE       assert False\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 1.71s\n",
+        "details": "Falha nos testes (exit code 1):\n.....................................F.................                  [100%]\n=================================== FAILURES ===================================\n______________________________ test_minimum_valid ______________________________\n\n    def test_minimum_valid():\n>       assert False, \"canary test failure\"\nE       AssertionError: canary test failure\nE       assert False\n\ntests/test_preflight.py:11: AssertionError\n1 failed, 54 passed in 1.08s\n",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": [
@@ -406,9 +406,9 @@
       {
         "name": "session_memory_recorded",
         "passed": true,
-        "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+        "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
         "details": [
-          "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+          "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
         ]
       }
     ],
@@ -425,8 +425,8 @@
     },
     "mutation": {
       "verified": true,
-      "diff_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "diff_snippet": ""
+      "diff_hash": "879bc635c105c7eadbd9df53d22c7e76519b04a1cd3bb82e987fd7fb07afc6f2",
+      "diff_snippet": "--- /dev/null\n+++ b/canary_unauthorized.py\n@@ -0,0 +1 @@\n+# canary drift"
     },
     "is_valid": true,
     "ready_for_human_acceptance": false,
@@ -469,7 +469,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 2.01s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.33s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -499,7 +499,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 2.01s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.33s"
         ]
       },
       {
@@ -521,9 +521,9 @@
       {
         "name": "session_memory_recorded",
         "passed": true,
-        "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+        "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
         "details": [
-          "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+          "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
         ]
       }
     ],
@@ -604,7 +604,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 4.68s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.26s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -645,7 +645,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 4.68s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.26s"
         ]
       },
       {
@@ -667,9 +667,9 @@
       {
         "name": "session_memory_recorded",
         "passed": true,
-        "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+        "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
         "details": [
-          "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+          "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
         ]
       }
     ],
@@ -686,8 +686,8 @@
     },
     "mutation": {
       "verified": true,
-      "diff_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "diff_snippet": ""
+      "diff_hash": "5a15ef76d7723de4424008ba5f2e776b1c05c086a4c5441d65f674952d457f42",
+      "diff_snippet": "--- /dev/null\n+++ b/canary_temp_file.tmp\n@@ -0,0 +1 @@\n+temporary data"
     },
     "is_valid": true,
     "ready_for_human_acceptance": false,
@@ -730,7 +730,7 @@
         "status": "pass",
         "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
         "exit_code": 0,
-        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 2.66s",
+        "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.04s",
         "artifact_path": null,
         "requires_interrupt": false,
         "issues": []
@@ -760,7 +760,7 @@
         "passed": true,
         "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
         "details": [
-          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 2.66s"
+          "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.04s"
         ]
       },
       {
@@ -783,9 +783,9 @@
       {
         "name": "session_memory_recorded",
         "passed": true,
-        "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+        "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
         "details": [
-          "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+          "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
         ]
       }
     ],

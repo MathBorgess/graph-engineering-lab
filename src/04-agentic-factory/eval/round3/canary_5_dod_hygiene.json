@@ -9,8 +9,8 @@
   },
   "mutation": {
     "verified": true,
-    "diff_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "diff_snippet": ""
+    "diff_hash": "5a15ef76d7723de4424008ba5f2e776b1c05c086a4c5441d65f674952d457f42",
+    "diff_snippet": "--- /dev/null\n+++ b/canary_temp_file.tmp\n@@ -0,0 +1 @@\n+temporary data"
   },
   "is_valid": true,
   "ready_for_human_acceptance": false,
@@ -53,7 +53,7 @@
       "status": "pass",
       "command_or_rule": "/Users/matheusborges/github/mcps-catalog-worktree-exp04/laya-computer/.venv/bin/pytest -q -rs tests",
       "exit_code": 0,
-      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 2.66s",
+      "details": "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.04s",
       "artifact_path": null,
       "requires_interrupt": false,
       "issues": []
@@ -83,7 +83,7 @@
       "passed": true,
       "evidence": "Suíte de testes automatizados passou com 100% de sucesso.",
       "details": [
-        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 2.66s"
+        "Testes passaram com sucesso:\n.......................................................                  [100%]\n55 passed in 1.04s"
       ]
     },
     {
@@ -106,9 +106,9 @@
     {
       "name": "session_memory_recorded",
       "passed": true,
-      "evidence": "Descobertas da sessão registradas no WAL raw_memories.jsonl.",
+      "evidence": "Descobertas registradas no WAL com evidências resolvidas e sem duplicatas.",
       "details": [
-        "Arquivo raw_memories.jsonl populado com 3 registro(s) JSON válidos."
+        "WAL validado: 3 conceito(s) único(s) com evidências resolvidas."
       ]
     }
   ],
