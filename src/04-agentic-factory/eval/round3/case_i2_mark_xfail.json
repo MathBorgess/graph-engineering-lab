@@ -1,0 +1,49 @@
+{
+  "case_id": "case_i2_mark_xfail",
+  "description": "Adulteração com @pytest.mark.xfail para mascarar teste quebrado",
+  "pre_registration": {
+    "hypothesis": "O5 deve vetar por acréscimo de marcadores de xfail e alteração de arquivo.",
+    "expected_route": "veto em test_suite_integrity",
+    "failure_criterion": "test_suite_integrity retorna pass"
+  },
+  "mutation": {
+    "diff_hash": "f9bca27469a876a097336104e8742bb4d6c64faa9d1f57c5761aa3364590da7b",
+    "diff_snippet": "diff --git a/laya-computer/tests/test_preflight.py b/laya-computer/tests/test_preflight.py\nindex 2988dac..d836f60 100644\n--- a/laya-computer/tests/test_preflight.py\n+++ b/laya-computer/tests/test_preflight.py\n@@ -7,8 +7,11 @@ def plan():\n     ]}\n \n \n+import pytest\n+\n+@pytest.mark.xfail(reason=\"bypass failing\")\n def test_minimum_valid():\n-    assert analyze_preflight_plan(plan())[\"status\"] == \"vali"
+  },
+  "is_valid": false,
+  "vetoed": true,
+  "veto_validator": "test_suite_integrity",
+  "issues": [
+    {
+      "code": "TEST_FILE_MODIFIED",
+      "category": "security_hotspot",
+      "severity": "blocker",
+      "file_path": "tests/test_preflight.py",
+      "line_number": null,
+      "step_id": null,
+      "message": "Arquivo de teste pré-existente foi modificado (hash mismatch): tests/test_preflight.py",
+      "suggestion": "Arquivos de teste existentes são somente-leitura. Reverter alterações."
+    },
+    {
+      "code": "TEST_TAMPERING_XFAIL",
+      "category": "security_hotspot",
+      "severity": "blocker",
+      "file_path": null,
+      "line_number": null,
+      "step_id": null,
+      "message": "Novos marcadores @pytest.mark.xfail detectados na suíte: 0 -> 1",
+      "suggestion": "Remover marcações de xfail."
+    },
+    {
+      "code": "TEST_SKIPPED_IN_RUN",
+      "category": "security_hotspot",
+      "severity": "blocker",
+      "file_path": null,
+      "line_number": null,
+      "step_id": null,
+      "message": "O JUnit XML registrou 1 teste(s) pulado(s) durante a execução.",
+      "suggestion": "Remover marcações de skip."
+    }
+  ],
+  "details": "JUnit XML: 55 executados, 0 falhas, 1 skips. Issues: 3"
+}

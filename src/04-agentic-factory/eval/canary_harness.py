@@ -60,6 +60,8 @@ def get_worktree_diff() -> Tuple[str, str]:
         extra_diff = []
         for line in untracked_lines:
             fpath = line[3:].strip()
+            if fpath.startswith(f"{WORKTREE_PATH.name}/"):
+                fpath = fpath[len(WORKTREE_PATH.name) + 1:]
             full_p = WORKTREE_PATH / fpath
             if full_p.is_file():
                 try:

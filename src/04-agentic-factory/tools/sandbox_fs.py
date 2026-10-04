@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 from langchain_core.tools import tool
 
 
@@ -14,9 +15,18 @@ def _resolve_safe_path(worktree_path: Path, relative_or_abs_path: str) -> Path:
     return target
 
 
-def create_sandbox_fs_tools(worktree_path: Path) -> list:
+def create_sandbox_fs_tools(
+    worktree_path: Path,
+    readonly_files: Optional[Set[str]] = None,
+    write_attempts_log: Optional[List[dict]] = None,
+) -> list:
     """Cria instâncias de ferramentas de filesystem presas ao worktree_path fornecido."""
     worktree = worktree_path.resolve()
+    readonly_set = {str(Path(f).as_posix()).lstrip("/") for f in (readonly_files or set())}
+
+    def _is_readonly(path_str: str) -> bool:
+        norm = str(Path(path_str).as_posix()).lstrip("/")
+        return norm in readonly_set or any(norm == ro or norm.endswith("/" + ro) for ro in readonly_set)
 
     @tool
     def read_file(path: str) -> str:
@@ -45,6 +55,14 @@ def create_sandbox_fs_tools(worktree_path: Path) -> list:
             new_content: Novo texto que substituirá old_content.
         """
         try:
+            if _is_readonly(path):
+                if write_attempts_log is not None:
+                    write_attempts_log.append({
+                        "event": "PERMISSION_DENIED_READONLY_TEST",
+                        "tool": "edit_file",
+                        "path": path,
+                    })
+                return f"Erro: PERMISSION_DENIED_READONLY_TEST. Arquivo '{path}' é de teste pré-existente e somente-leitura. Crie novos arquivos de teste."
             target = _resolve_safe_path(worktree, path)
             if not target.exists():
                 return f"Erro: Arquivo '{path}' não existe."
@@ -66,6 +84,14 @@ def create_sandbox_fs_tools(worktree_path: Path) -> list:
             content: Conteúdo de texto a ser gravado.
         """
         try:
+            if _is_readonly(path):
+                if write_attempts_log is not None:
+                    write_attempts_log.append({
+                        "event": "PERMISSION_DENIED_READONLY_TEST",
+                        "tool": "write_file",
+                        "path": path,
+                    })
+                return f"Erro: PERMISSION_DENIED_READONLY_TEST. Arquivo '{path}' é de teste pré-existente e somente-leitura. Crie novos arquivos de teste."
             target = _resolve_safe_path(worktree, path)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding="utf-8")
