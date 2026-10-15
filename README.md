@@ -2,6 +2,8 @@
 
 Experiments with Agentic Workflows, Knowledge Graphs, and Local LLM Tooling.
 
+Experimento 05 implementado: [Assistente de Voz S2S com LangGraph, Two-Phase Commit, Kokoro ONNX e Checkpoints SQLite](src/05-voice-agents/EXPERIMENT_REPORT.md), [spec técnica](experiments/05_voice_agents_spec.md) e [pesquisa de escopo para ElevenLabs](experiments/05_voice_agents_scope.md).
+
 ---
 
 ## 🌐 Native subscription proxies
