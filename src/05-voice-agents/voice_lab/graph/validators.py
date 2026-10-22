@@ -1,6 +1,10 @@
 """Validadores determinísticos, Guardrails e Execução SAGA para o grafo de voz."""
 
 import time
+import hashlib
+import json
+import re
+import unicodedata
 from typing import Any, Dict, Literal
 from langchain_core.messages import AIMessage
 from voice_lab.contracts.state import ConversationState, ActionProposal, ToolResult
@@ -13,28 +17,33 @@ DecisionIntent = Literal["CONFIRM", "REJECT", "MODIFY", "AMBIGUOUS"]
 def evaluate_decision_intent(user_utterance: str, pending_proposal: ActionProposal) -> tuple[DecisionIntent, float]:
     """Avalia a intenção do usuário frente a uma proposta pendente."""
     t0 = time.perf_counter()
-    u = user_utterance.lower().strip()
-    
-    confirm_phrases = [
-        "sim", "confirma", "pode", "executa", "positivo", "claro", 
-        "confirmo", "ok", "manda ver", "bora", "com certeza", "autorizo"
-    ]
-    reject_phrases = [
-        "não", "nao", "cancela", "esquece", "espera", "para", 
-        "não quero", "cancelo", "aborta", "desiste"
-    ]
-    modify_phrases = ["muda", "troca", "em vez de", "altera", "outro perfil", "outro experimento"]
-    
+    # Restrict acceptance to an entire explicit response, never a substring.
+    text = "".join(c for c in unicodedata.normalize("NFKD", user_utterance.casefold())
+                   if not unicodedata.combining(c))
+    u = " ".join(re.sub(r"[^a-z0-9 ]", " ", text).split())
+    confirmations = {
+        "sim", "confirmo", "sim confirmo", "confirmo a execucao",
+        "sim confirmo a execucao", "autorizo", "autorizo a execucao",
+        "pode executar", "pode executar a acao",
+    }
     intent: DecisionIntent = "AMBIGUOUS"
-    if any(p in u for p in modify_phrases):
-        intent = "MODIFY"
-    elif any(p in u for p in reject_phrases):
+    if re.search(r"\b(nao|cancela|cancele|cancelo|aborta|aborte|espera|espere|pare)\b", u):
         intent = "REJECT"
-    elif any(p in u for p in confirm_phrases):
+    elif re.search(r"\b(muda|mude|troca|troque|altera|altere)\b|em vez de|outro perfil|outro experimento", u):
+        intent = "MODIFY"
+    elif "?" not in user_utterance and u in confirmations:
         intent = "CONFIRM"
-        
+
     decision_latency_ms = (time.perf_counter() - t0) * 1000.0
     return intent, decision_latency_ms
+
+
+def proposal_digest(proposal: ActionProposal) -> str:
+    """Bind consent and retry identity to the exact proposal/version/arguments."""
+    payload = {"proposal_id": proposal.proposal_id, "version": proposal.version,
+               "tool_name": proposal.tool_name, "arguments": proposal.arguments}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False,
+                                    separators=(",", ":")).encode()).hexdigest()
 
 
 def guardrail_validator_node(state: ConversationState) -> Dict[str, Any]:
@@ -63,7 +72,14 @@ def saga_executor_node(state: ConversationState) -> Dict[str, Any]:
         return {}
 
     try:
-        tool_result = execute_trigger_experiment(**proposal.arguments)
+        if proposal.tool_name != "trigger_experiment":
+            raise ValueError("Ferramenta não autorizada pelo despachante")
+        digest = proposal_digest(proposal)
+        if not proposal.confirmed_by_message_id or proposal.confirmation_digest != digest:
+            raise ValueError("Confirmação ausente ou parâmetros alterados após a confirmação")
+        tool_result = execute_trigger_experiment(
+            **proposal.arguments, idempotency_key=f"voice-action:{digest}")
+        tool_result.proposal_id = proposal.proposal_id
         proposal.status = "executed"
         
         reply = (

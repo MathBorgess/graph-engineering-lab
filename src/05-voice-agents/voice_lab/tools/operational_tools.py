@@ -19,18 +19,6 @@ def list_jobs(status_filter: Optional[str] = None) -> Dict[str, Any]:
     """Consulta o status dos experimentos e jobs registrados no sandbox SQLite do laboratório."""
     jobs = sandbox.list_jobs(status_filter=status_filter)
     
-    # Se o sandbox estiver vazio na primeira execução, popular com mock inicial
-    if not jobs:
-        for i, (exp, prof, st) in enumerate([
-            ("01_react_experiment", "baseline", "completed"),
-            ("02_deepagents_experiment", "deep", "completed"),
-            ("03_harness_reverse", "memory_v1", "completed"),
-            ("04_agentic_factory", "scaffold", "running"),
-            ("05_voice_agents", "local_light", "running"),
-        ], start=1):
-            sandbox.trigger_job(exp, prof, idempotency_key=f"init_seed_{i}")
-        jobs = sandbox.list_jobs(status_filter=status_filter)
-
     jobs_dicts = [j.model_dump() for j in jobs]
     return {
         "total": len(jobs_dicts),
@@ -41,7 +29,9 @@ def list_jobs(status_filter: Optional[str] = None) -> Dict[str, Any]:
 
 def execute_trigger_experiment(experiment_id: str, profile: str, idempotency_key: Optional[str] = None) -> ToolResult:
     """Dispara um experimento no sandbox SQLite com garantia de idempotência."""
-    key = idempotency_key or f"idem_{abs(hash(experiment_id + profile))}"
+    if not idempotency_key:
+        raise ValueError("A stable idempotency_key is required before execution")
+    key = idempotency_key
     record, is_new = sandbox.trigger_job(experiment_id, profile, idempotency_key=key)
     
     status_msg = "disparado com sucesso" if is_new else "já estava em execução (idempotência respeitada)"

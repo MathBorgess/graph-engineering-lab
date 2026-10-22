@@ -18,6 +18,8 @@ class ActionProposal(BaseModel):
     summary_for_user: str
     status: ProposalStatus = "pending"
     version: int = 1
+    confirmation_digest: Optional[str] = None
+    confirmed_by_message_id: Optional[str] = None
 
 
 class ToolResult(BaseModel):
@@ -44,6 +46,7 @@ class ConversationState(BaseModel):
     messages: Annotated[List[BaseMessage], add_messages] = Field(default_factory=list)
     user_id: str = "default_user"
     thread_id: str = "default_thread"
+    last_processed_user_message_id: Optional[str] = None
     
     # Máquina de estados para Two-Phase Commit de ações mutantes
     pending_proposal: Optional[ActionProposal] = None

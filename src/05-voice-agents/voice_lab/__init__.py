@@ -23,9 +23,19 @@ from voice_lab.tools.operational_tools import (
     execute_cancel_experiment,
 )
 from voice_lab.tools.sandbox import sandbox
-from voice_lab.audio.stream import TextSentenceChunker, BargeInController
-from voice_lab.audio.tts import speak_text
-from voice_lab.agents.runner import run_interactive_s2s
+# Optional hardware/model dependencies are loaded only when explicitly used.
+def __getattr__(name):
+    if name in {"TextSentenceChunker", "BargeInController"}:
+        from voice_lab.audio import stream
+        return getattr(stream, name)
+    if name == "speak_text":
+        from voice_lab.audio.tts import speak_text
+        return speak_text
+    if name == "run_interactive_s2s":
+        from voice_lab.agents.runner import run_interactive_s2s
+        return run_interactive_s2s
+    raise AttributeError(name)
+
 
 __version__ = "0.1.0"
 

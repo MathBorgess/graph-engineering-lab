@@ -2,6 +2,7 @@
 
 import sqlite3
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
@@ -61,15 +62,18 @@ class OperationalSandbox:
         Retorna (JobRecord, is_new: bool). Se já existia, is_new=False."""
         now = time.time()
         with self._get_connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             # 1. Checar se a idempotency_key já existe
             cursor = conn.execute("SELECT * FROM jobs WHERE idempotency_key = ?", (idempotency_key,))
             row = cursor.fetchone()
             if row:
                 record = JobRecord(**dict(row))
+                if record.experiment_id != experiment_id or record.profile != profile:
+                    raise ValueError("Idempotency key reused with different arguments")
                 return record, False  # Já existia, idempotência respeitada
 
             # 2. Inserir novo job
-            job_id = f"job_{abs(hash(idempotency_key)) % 100000:05d}"
+            job_id = f"job_{uuid.uuid4().hex}"
             conn.execute(
                 """
                 INSERT INTO jobs (job_id, experiment_id, profile, status, idempotency_key, created_at, updated_at)
@@ -97,6 +101,7 @@ class OperationalSandbox:
         """Transação compensatória SAGA: cancela um job em andamento."""
         now = time.time()
         with self._get_connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             cursor = conn.execute("SELECT * FROM jobs WHERE job_id = ?", (job_id,))
             row = cursor.fetchone()
             if not row:
