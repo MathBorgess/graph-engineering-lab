@@ -2,6 +2,8 @@
 
 Experiments with Agentic Workflows, Knowledge Graphs, and Local LLM Tooling.
 
+Experimento 05 implementado: [Assistente de Voz S2S com LangGraph, Two-Phase Commit, Kokoro ONNX e Checkpoints SQLite](src/05-voice-agents/EXPERIMENT_REPORT.md), [spec técnica](experiments/05_voice_agents_spec.md) e [pesquisa de escopo para ElevenLabs](experiments/05_voice_agents_scope.md).
+
 ---
 
 ## 🌐 Native subscription proxies
@@ -115,3 +117,12 @@ Documentação e cadernos de laboratório:
 - 👉 [**`src/03-harness-reverse-experiment/report.md`**](src/03-harness-reverse-experiment/report.md)
 - 👉 [**`src/03-harness-reverse-experiment/memory_and_self_improvement_study.md`**](src/03-harness-reverse-experiment/memory_and_self_improvement_study.md)
 - 👉 [**`experiments/03_harness_reverse_engineering.md`**](experiments/03_harness_reverse_engineering.md)
+
+
+## Voice Lab (Experiment 05)
+
+The [voice experiment](src/05-voice-agents/README.md) separates its optional audio
+runtime from a portable LangGraph/SQLite control path. Jobs are sandbox records,
+not real experiment launches. The safety suite covers explicit consent, retries,
+checkpoint recovery, concurrency and reads without fixture writes. Historical
+speech-quality and latency reports are not revalidated by that suite.

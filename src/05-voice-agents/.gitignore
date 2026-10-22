@@ -1,0 +1,9 @@
+.venv/
+.artifacts/
+mlruns/
+__pycache__/
+*.pyc
+*.sqlite
+*.db
+.cache/
+*.wav
